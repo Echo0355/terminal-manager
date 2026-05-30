@@ -160,3 +160,8 @@ export function loadLayoutState(): LayoutState | null {
 export function saveLayoutState(state: LayoutState): void {
   writeJson(getLayoutPath(), state)
 }
+
+/** 清空布局状态文件，应用退出时调用 */
+export function clearLayoutState(): void {
+  writeJson(getLayoutPath(), { tabs: [] })
+}

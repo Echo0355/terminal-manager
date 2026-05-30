@@ -1,229 +1,295 @@
-﻿# 终端管理器用户指南
+# Terminal Manager User Guide
 
-## 目录
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- [界面介绍](#界面介绍)
-- [终端操作](#终端操作)
-- [标签管理](#标签管理)
-- [分屏布局](#分屏布局)
-- [项目管理](#项目管理)
-- [设置配置](#设置配置)
-- [布局恢复](#布局恢复)
-- [快捷键参考](#快捷键参考)
+English | **[中文](./USER_GUIDE_CN.md)**
 
-## 界面介绍
+## Table of Contents
+
+- [Interface Overview](#interface-overview)
+- [Terminal Operations](#terminal-operations)
+- [Tab Management](#tab-management)
+- [Split Layout](#split-layout)
+- [Drag and Drop](#drag-and-drop)
+- [Project Management](#project-management)
+- [Settings](#settings)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+
+## Interface Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ 文件  编辑  视图  终端  帮助                                      │
-├─────────────────────────────────────────────────────────────────┤
-│ [终端 1] [终端 2] [终端 3] ＋                                    │
-├───────────────┬─────────────────────────────────────────────────┤
-│ 项目          │                                                 │
-│ ───────────── │  ┌─────────────────┬─────────────────┐         │
-│ ＋ 添加项目    │  │                 │                 │         │
-│               │  │   PowerShell    │   PowerShell    │         │
-│ 📁 my-app     │  │   > _           │   > _           │         │
-│ 📁 backend    │  │                 │                 │         │
-│ 📁 frontend   │  ├─────────────────┴─────────────────┤         │
-│               │  │                                   │         │
-│               │  │   PowerShell                      │         │
-│               │  │   > _                             │         │
-│               │  │                                   │         │
-│               │  └───────────────────────────────────┘         │
-├───────────────┴─────────────────────────────────────────────────┤
-│ PowerShell  ~                                    UTF-8         │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│ File  Edit  View  Terminal  Help                                      │
+├────┬──────────────────────────────────────────────────────────────────┤
+│    │ [Terminal 1] [Terminal 2] [Terminal 3] ＋                        │
+│ ├─ │ ┌──────────────────────┬──────────────────────┐                │
+│ │📁│ │  ┌─────┐ ┌─────┐    │  ┌─────┐             │                │
+│ │  │ │  │Pane1│ │Pane2│    │  │Pane1│             │                │
+│ │  │ │  └─────┘ └─────┘    │  └─────┘             │                │
+│ ├─ │ │  PowerShell > _     │  PowerShell > _      │                │
+│ │⚙│ ├──────────────────────┴──────────────────────┤                │
+│    │ │  PowerShell > _                             │                │
+│    │ └────────────────────────────────────────────┘                │
+├────┴──────────────────────────────────────────────────────────────────┤
+│  PowerShell  ~\projects                              UTF-8  Dark     │
+└───────────────────────────────────────────────────────────────────────┘
+  Activity Bar  Sidebar        Tab Bar              Terminal Area  Status Bar
 ```
 
-### 区域说明
+### Area Description
 
-| 区域 | 功能 |
-|------|------|
-| **菜单栏** | 应用菜单，包含文件、编辑、视图、终端、帮助 |
-| **标签栏** | 终端标签页，支持新建、关闭、切换 |
-| **侧边栏** | 项目列表，可添加/删除/打开项目 |
-| **终端区** | xterm.js 渲染的终端，支持分屏 |
-| **状态栏** | 显示当前 Shell、工作目录等信息 |
+| Area | Function |
+|------|----------|
+| **Activity Bar** | Left icon bar (48px), contains sidebar toggle and settings buttons, always dark theme |
+| **Sidebar** | Project explorer, add/delete/open projects, resizable width (150-400px) |
+| **Tab Bar** | Workspace tabs, support new, close, drag reorder, shows pane count badge when split |
+| **Pane Tab Bar** | Secondary tab bar inside each pane in split mode, shows pane title and close button |
+| **Terminal Area** | xterm.js rendered terminal, supports horizontal/vertical split, drag to resize |
+| **Status Bar** | Bottom info bar, left shows Shell name and working directory, right shows pane count, encoding, and theme toggle |
 
-## 终端操作
+## Terminal Operations
 
-### 打开新终端
+### Open New Terminal
 
-- 点击标签栏的 **＋** 按钮
-- 按 `Ctrl+T`
-- 从菜单"终端 → 新建终端"
+- Click the **＋** button in the tab bar
+- Press `Ctrl+T`
+- From menu "Terminal → New Terminal"
 
-### 输入命令
+### Enter Commands
 
-直接在终端中输入命令，与系统终端使用方式相同。
+Type commands directly in the terminal, same as using the system terminal.
 
-### 复制粘贴
+### Copy and Paste
 
-- **复制**：选中文本后自动复制，或按 `Ctrl+Shift+C`
-- **粘贴**：按 `Ctrl+Shift+V`
+- **Copy**: Automatically copies selected text to clipboard, or press `Ctrl+Shift+C`
+- **Paste**: Press `Ctrl+Shift+V` or `Ctrl+V`
+- **Right-click menu**: Copies when text is selected, pastes when no text is selected
 
-### 关闭终端
+### Close Terminal
 
-- 点击标签上的 **×** 按钮
-- 按 `Ctrl+W`
-- 从菜单"文件 → 关闭标签"
+- Click the **×** button on the tab
+- Press `Ctrl+W`
+- From menu "File → Close Tab"
 
-关闭时会弹出确认对话框。
+A confirmation dialog will appear when closing.
 
-## 标签管理
+### Clickable Links
 
-### 新建标签
+URLs in terminal output are automatically recognized as clickable links.
 
-点击标签栏的 **＋** 按钮或按 `Ctrl+T`。
+## Tab Management
 
-### 切换标签
+### New Tab
 
-- 点击标签
-- 按 `Ctrl+Tab` 切换到下一个标签
-- 按 `Ctrl+Shift+Tab` 切换到上一个标签
-- 按 `Ctrl+1~9` 切换到指定位置的标签
+Click the **＋** button in the tab bar or press `Ctrl+T`.
 
-### 关闭标签
+### Switch Tabs
 
-- 点击标签上的 **×** 按钮
-- 按 `Ctrl+W`
+- Click on a tab
+- Press `Ctrl+Tab` to switch to the next tab
+- Press `Ctrl+Shift+Tab` to switch to the previous tab
+- Press `Ctrl+1~9` to switch to a specific tab position
 
-如果标签内有多个面板，会先确认再关闭。
+### Drag Reorder
 
-## 分屏布局
+Tabs support drag reorder. Hold and drag a tab to the target position.
 
-### 调整面板大小
+### Split Badge
 
-鼠标悬停在面板之间的分割线上，光标变为 ↔ 或 ↕ 时拖拽调整。
+When a tab contains multiple panes, a blue badge showing the pane count is displayed on the tab for easy identification of split status.
 
-### 焦点切换
+### Close Tab
 
-按 `Alt+方向键` 在相邻面板间移动焦点。
+- Click the **×** button on the tab
+- Press `Ctrl+W`
 
-获得焦点的面板会有蓝色边框高亮。
+If the tab contains multiple panes, a confirmation will be requested first.
 
-### 关闭面板
+## Split Layout
 
-按 `Alt+Shift+W` 关闭当前焦点面板。
+### Horizontal Split (Left/Right)
 
-如果只剩一个面板，会关闭整个标签。
+- Press `Ctrl+Shift+D`
+- From menu "Terminal → Horizontal Split"
 
-## 项目管理
+The current pane will split into two panes left and right, and the new pane automatically gains focus.
 
-### 添加项目
+### Vertical Split (Up/Down)
 
-1. 点击侧边栏顶部的 **＋** 按钮
-2. 在弹出的对话框中选择项目目录
-3. 项目会出现在侧边栏列表中
+- Press `Ctrl+Shift+Alt+D`
+- From menu "Terminal → Vertical Split"
 
-### 打开项目终端
+The current pane will split into two panes up and down.
 
-- **点击项目名称**：在新标签中打开，工作目录为项目目录
-- **点击 ▶**：同上
+### Resize Panes
 
-### 删除项目
+Hover the mouse over the divider between panes (4px wide), and drag when the cursor changes to ↔ or ↕.
 
-将鼠标悬停在项目上，点击 **✕** 按钮。
+The divider highlights on hover and drag. Dragging updates the layout in real-time, and automatically normalizes to ensure sizes sum to 100% on mouse release.
 
-删除项目不会删除目录本身，只是从列表中移除。
+### Focus Navigation
 
-## 设置配置
+Press `Alt+Arrow Keys` to move focus between adjacent panes:
 
-按 `Ctrl+,` 打开设置对话框。
+| Shortcut | Function |
+|----------|----------|
+| `Alt+←` | Focus moves to left pane |
+| `Alt+→` | Focus moves to right pane |
+| `Alt+↑` | Focus moves to upper pane |
+| `Alt+↓` | Focus moves to lower pane |
 
-### 可配置项
+The focused pane will have a blue border highlight.
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| 默认 Shell | 终端使用的 Shell 路径 | `powershell.exe` (Windows) |
-| 默认目录 | 新终端的默认工作目录 | 用户主目录 |
-| 字体大小 | 终端字体大小 (8-32) | 14 |
-| 滚动缓冲 | 终端历史记录行数 | 10000 |
-| 主题 | 深色或浅色主题 | 深色 |
+### Close Pane
 
-### 保存设置
+- Press `Alt+Shift+W`
+- Click the **×** button in the pane tab bar
 
-修改后点击"保存"按钮。设置会在下次启动应用时生效。
+If only one pane remains, closing the pane closes the entire tab.
 
-### 常用 Shell 路径
+## Drag and Drop
+
+Terminal Manager supports VS Code-style drag and drop operations.
+
+### Drag Pane
+
+Drag pane tabs to reorder within the same tab, or move to other tabs.
+
+### Drag to Edge
+
+When dragging a pane tab to the edge area of a target pane, a split operation is triggered:
+
+| Drop Position | Effect |
+|---------------|--------|
+| Target pane center | Replace target pane |
+| Target pane left | Horizontal split to the left of target |
+| Target pane right | Horizontal split to the right of target |
+| Target pane top | Vertical split above target |
+| Target pane bottom | Vertical split below target |
+
+A direction indicator is displayed during drag to show the position after release.
+
+### Drag to Tab Bar
+
+Dragging a pane tab to the top tab bar extracts that pane into a new independent tab.
+
+## Project Management
+
+### Add Project
+
+1. Click the **＋** button at the top of the sidebar
+2. Select a project directory in the system directory selection dialog
+3. The project will appear in the sidebar list
+
+### Open Project Terminal
+
+- **Double-click project name**: Opens in a new tab with working directory set to the project directory
+- **Click ▶ button**: Same as above
+
+### Delete Project
+
+Hover over the project and click the **✕** button. A confirmation dialog will appear.
+
+Deleting a project does not delete the directory itself, only removes it from the list.
+
+### Sidebar Operations
+
+- **Resize width**: Drag the right edge of the sidebar (min 150px, max 400px)
+- **Collapse/Expand**: Click the sidebar icon in the activity bar
+
+## Settings
+
+Press `Ctrl+,` to open the settings dialog, or click the gear icon at the bottom of the activity bar.
+
+### Appearance Settings
+
+| Setting | Description |
+|---------|-------------|
+| Theme | Dark or light theme with visual preview color blocks. **Takes effect immediately** |
+
+### Terminal Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Default Shell | Shell path used by terminal | `powershell.exe` (Windows) / `/bin/zsh` (macOS) |
+| Default Directory | Default working directory for new terminals | User home directory |
+| Font Size | Terminal font size (8-32) | 14 |
+| Scrollback | Terminal history lines (100-100000) | 10000 |
+
+> **Note**: Terminal settings (Shell, directory, font size, scrollback) require application restart to take effect. Theme settings take effect immediately.
+
+### Save Settings
+
+Click the "Save" button after making changes. Press `Esc` or click outside the dialog to cancel.
+
+### Auto-detected Shells
+
+The application automatically detects available shells on startup:
 
 **Windows:**
-- PowerShell: `powershell.exe`
-- CMD: `cmd.exe`
-- Git Bash: `C:\Program Files\Git\bin\bash.exe`
+- PowerShell (always available)
+- CMD (detected from `%COMSPEC%` environment variable)
+- Git Bash (`C:\Program Files\Git\bin\bash.exe`, requires Git installed)
+- WSL (`C:\Windows\System32\wsl.exe`, requires WSL enabled)
 
-**macOS:**
-- Zsh: `/bin/zsh`
-- Bash: `/bin/bash`
-- Fish: `/opt/homebrew/bin/fish`
+**macOS / Linux:**
+- Zsh (`/bin/zsh`)
+- Bash (`/bin/bash`)
+- Sh (`/bin/sh`)
+- Fish (`/usr/bin/fish` or `/opt/homebrew/bin/fish`)
 
-## 布局恢复
+Only detected shells and the default shell specified in the configuration file are allowed.
 
-应用会自动保存布局状态，包括：
+## Keyboard Shortcuts
 
-- 所有标签
-- 分屏布局结构
-- 每个面板的 Shell 和工作目录
-- 侧边栏宽度
+### Tab Operations
 
-### 保存时机
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl+T` | New tab |
+| `Ctrl+W` | Close current pane (closes tab when last pane) |
+| `Ctrl+Tab` | Next tab |
+| `Ctrl+Shift+Tab` | Previous tab |
+| `Ctrl+1` ~ `Ctrl+9` | Switch to Nth tab |
 
-布局状态会在以下操作后自动保存（带 500ms 防抖）：
+### Split Operations
 
-- 新建/关闭标签
-- 切换标签
-- 关闭面板
-- 拖拽分割线调整大小
-- 调整侧边栏宽度
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl+Shift+D` | Horizontal split (left/right) |
+| `Ctrl+Shift+Alt+D` | Vertical split (up/down) |
+| `Alt+Shift+W` | Close current pane |
 
-### 恢复逻辑
+### Focus Navigation
 
-重启应用后：
+| Shortcut | Function |
+|----------|----------|
+| `Alt+←` | Focus left |
+| `Alt+→` | Focus right |
+| `Alt+↑` | Focus up |
+| `Alt+↓` | Focus down |
 
-1. 加载保存的布局状态
-2. 按保存的 Shell 和工作目录重新创建终端
-3. 恢复分屏布局结构
-4. 恢复活动标签和焦点面板
+### Clipboard
 
-### 注意事项
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl+Shift+C` | Copy selected text |
+| `Ctrl+Shift+V` / `Ctrl+V` | Paste |
 
-- 布局恢复不会恢复终端中正在运行的命令
-- 不会恢复 Shell 的内存状态
-- 如果保存的 Shell 路径无效，会使用默认 Shell
-- 如果保存的工作目录不存在，会回退到用户主目录
+### Application
 
-## 快捷键参考
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl+,` | Open settings |
+| `Esc` | Close dialog |
+| `F11` | Toggle fullscreen |
 
-### 标签操作
+### Menus
 
-| Windows | macOS | 功能 |
-|---------|-------|------|
-| `Ctrl+T` | `⌘+T` | 新建标签 |
-| `Ctrl+W` | `⌘+W` | 关闭标签 |
-| `Ctrl+Tab` | `⌘+Tab` | 下一个标签 |
-| `Ctrl+Shift+Tab` | `⌘+⇧+Tab` | 上一个标签 |
-| `Ctrl+1~9` | `⌘+1~9` | 切换到第N个标签 |
-
-### 分屏操作
-
-| Windows | macOS | 功能 |
-|---------|-------|------|
-| `Alt+Shift+W` | `⌥+⇧+W` | 关闭面板 |
-
-### 焦点切换
-
-| Windows | macOS | 功能 |
-|---------|-------|------|
-| `Alt+←` | `⌥+←` | 焦点左移 |
-| `Alt+→` | `⌥+→` | 焦点右移 |
-| `Alt+↑` | `⌥+↑` | 焦点上移 |
-| `Alt+↓` | `⌥+↓` | 焦点下移 |
-
-### 其他
-
-| Windows | macOS | 功能 |
-|---------|-------|------|
-| `Ctrl+,` | `⌘+,` | 打开设置 |
-| `Esc` | `Esc` | 关闭对话框 |
-
+| Menu | Functions |
+|------|-----------|
+| **File** | New Tab, Close Tab, Settings, Exit |
+| **Edit** | Undo, Redo, Cut, Copy, Paste, Delete, Select All |
+| **View** | Reload, Force Reload, Developer Tools, Zoom Controls, Fullscreen |
+| **Terminal** | New Terminal, Horizontal Split, Vertical Split, Close Pane, Focus Navigation, Tab Switching |
+| **Help** | About Dialog |

@@ -9,6 +9,7 @@ import { detectShells } from './shell-detector'
 import { init as initPtyIpc, killAllSessions } from './pty-ipc'
 import { createMenu } from './menu'
 import { createWindow } from './window'
+import { clearLayoutState } from './data-store'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -30,6 +31,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   killAllSessions()
+  clearLayoutState()
   if (process.platform !== 'darwin') {
     app.quit()
   }

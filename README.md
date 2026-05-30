@@ -1,154 +1,176 @@
-﻿# 终端管理器
+# Terminal Manager
 
-一个基于 Electron 的跨平台多终端管理工具，解决多终端窗口混乱和路径切换繁琐的问题。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 文档
+A cross-platform multi-terminal manager built with Electron, solving the problem of messy multiple terminal windows and tedious path switching.
 
-- [用户指南](./USER_GUIDE.md)
-- [已知限制](./KNOWN_LIMITATIONS.md)
-- [开发和 AI 文档目录](./docs/README.md)
+English | **[中文](./README_CN.md)**
 
-## 功能特性
+## Documentation
 
-- **多标签终端**：在一个窗口内管理多个终端会话
-- **分屏布局**：支持左右/上下分屏，自由调整大小
-- **项目管理**：添加常用项目目录，一键打开终端
-- **布局恢复**：重启后自动恢复标签、分屏和工作目录
-- **跨平台**：支持 Windows 和 macOS
+- [User Guide](./USER_GUIDE.md) | [用户指南](./USER_GUIDE_CN.md)
+- [Known Limitations](./KNOWN_LIMITATIONS.md)
+- [Development & AI Documentation](./docs/README.md)
 
-## 系统要求
+## Features
 
-- Windows 10 (1809+) 或 macOS 10.15+
+- **Multi-tab Terminal**: Manage multiple terminal sessions in one window
+- **Split Layout**: Support horizontal/vertical split with resizable panes
+- **Project Management**: Add frequently used project directories and open terminals with one click
+- **Layout Restoration**: Automatically restore tabs, splits, and working directories after restart
+- **Cross-platform**: Support Windows and macOS
+
+## System Requirements
+
+- Windows 10 (1809+) or macOS 10.15+
 - Node.js 20+
 
-## 安装
+## Installation
 
-### 下载安装包
+### Download Installer
 
-从 Releases 页面下载对应平台的安装包：
+Download the installer for your platform from the [Releases](https://github.com/Echo0355/terminal-manager/releases) page:
 
-- Windows: `终端管理器-0.1.0-Setup.exe`
+- Windows: `terminal-manager-0.1.0-Setup.exe`
 
-### 从源码构建
+### Build from Source
 
 ```bash
-# 克隆项目
-git clone <repository-url>
+# Clone the repository
+git clone https://github.com/Echo0355/terminal-manager.git
 cd terminal-manager
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 开发模式运行
+# Run in development mode
 npm run dev
 
-# 构建打包
+# Build and package
 npm run build
-npx electron-builder build --win --config
+npm run package
 ```
 
-## 快速开始
+## Quick Start
 
-### 启动应用
+### Launch Application
 
 ```bash
 npm run dev
 ```
 
-应用启动后会自动打开一个终端窗口。
+The application will automatically open a terminal window on startup.
 
-### 添加项目
+### Add Projects
 
-1. 点击侧边栏顶部的 **＋** 按钮
-2. 在弹出的对话框中选择项目目录
-3. 项目会出现在侧边栏列表中
+1. Click the **＋** button at the top of the sidebar
+2. Select a project directory in the dialog
+3. The project will appear in the sidebar list
 
-### 从项目打开终端
+### Open Terminal from Project
 
-- **点击项目名称**：在新标签中打开
-- **点击 ▶**：在新标签中打开
+- **Click project name**: Open in a new tab
+- **Click ▶**: Open in a new tab
 
-### 标签操作
+### Tab Operations
 
-| 操作 | 快捷键 |
-|------|--------|
-| 新建标签 | `Ctrl+T` |
-| 关闭标签 | `Ctrl+W` |
-| 下一个标签 | `Ctrl+Tab` |
-| 上一个标签 | `Ctrl+Shift+Tab` |
-| 切换到第N个标签 | `Ctrl+1~9` |
+| Action | Shortcut |
+|--------|----------|
+| New tab | `Ctrl+T` |
+| Close tab | `Ctrl+W` |
+| Next tab | `Ctrl+Tab` |
+| Previous tab | `Ctrl+Shift+Tab` |
+| Switch to Nth tab | `Ctrl+1~9` |
 
-### 分屏操作
+### Split Operations
 
-| 操作 | 快捷键 |
-|------|--------|
-| 关闭当前面板 | `Alt+Shift+W` |
+| Action | Shortcut |
+|--------|----------|
+| Close current pane | `Alt+Shift+W` |
 
-### 焦点切换
+### Focus Navigation
 
-| 操作 | 快捷键 |
-|------|--------|
-| 焦点移到左边 | `Alt+←` |
-| 焦点移到右边 | `Alt+→` |
-| 焦点移到上边 | `Alt+↑` |
-| 焦点移到下边 | `Alt+↓` |
+| Action | Shortcut |
+|--------|----------|
+| Focus left | `Alt+←` |
+| Focus right | `Alt+→` |
+| Focus up | `Alt+↑` |
+| Focus down | `Alt+↓` |
 
-### 设置
+### Settings
 
-按 `Ctrl+,` 打开设置对话框，可以配置：
+Press `Ctrl+,` to open the settings dialog. You can configure:
 
-- 默认 Shell（如 `powershell.exe`、`cmd.exe`、`bash`）
-- 默认工作目录
-- 字体大小（8-32）
-- 滚动缓冲行数
-- 主题（深色/浅色）
+- Default Shell (e.g., `powershell.exe`, `cmd.exe`, `bash`)
+- Default working directory
+- Font size (8-32)
+- Scrollback lines
+- Theme (dark/light)
 
-设置保存后需要重启应用生效。
+Settings require an application restart to take effect.
 
-## 布局恢复
+## Layout Restoration
 
-应用会自动保存以下状态：
+The application automatically saves the following state:
 
-- 所有标签和面板
-- 分屏布局结构
-- 每个面板的 Shell 和工作目录
-- 侧边栏宽度
+- All tabs and panes
+- Split layout structure
+- Shell and working directory for each pane
+- Sidebar width
 
-重启应用后，这些状态会自动恢复。
+These states are automatically restored after restarting the application.
 
-## 数据存储
+## Data Storage
 
-应用数据存储在用户目录下：
+Application data is stored in the user directory:
 
 - **Windows**: `%APPDATA%/terminal-manager/`
 - **macOS**: `~/Library/Application Support/terminal-manager/`
 
-包含以下文件：
+Contains the following files:
 
-- `config.json`：应用配置
-- `projects.json`：项目列表
-- `layout-state.json`：布局状态
+- `config.json`: Application configuration
+- `projects.json`: Project list
+- `layout-state.json`: Layout state
 
-## 常见问题
+## FAQ
 
-**Q: 终端无法启动？**
+**Q: Terminal won't start?**
 
-A: 请检查：
-1. Shell 路径是否正确
-2. 工作目录是否存在
-3. 系统是否安装了对应的 Shell
+A: Please check:
+1. Is the Shell path correct?
+2. Does the working directory exist?
+3. Is the corresponding Shell installed on your system?
 
-**Q: 如何更改默认 Shell？**
+**Q: How to change the default Shell?**
 
-A: 按 `Ctrl+,` 打开设置，在"默认 Shell"中输入 Shell 路径，保存后重启应用。
+A: Press `Ctrl+,` to open settings, enter the Shell path in "Default Shell", save and restart the application.
 
-**Q: 布局没有恢复？**
+**Q: Layout not restored?**
 
-A: 请检查：
-1. 应用是否正常关闭（非强制杀死）
-2. `layout-state.json` 文件是否存在且内容正常
+A: Please check:
+1. Was the application closed normally (not force-killed)?
+2. Does the `layout-state.json` file exist and contain valid content?
 
-## 许可证
+## Contributing
 
-MIT
+Contributions are welcome! Please check the [Contributing Guide](CLAUDE.md#contributing) for how to participate in the project.
 
+### Quick Start
+
+1. Fork this repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'feat: add some feature'`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Electron](https://www.electronjs.org/) - Cross-platform desktop application framework
+- [xterm.js](https://xtermjs.org/) - Terminal emulator
+- [node-pty](https://github.com/microsoft/node-pty) - PTY bindings
+- [electron-vite](https://electron-vite.org/) - Build tool

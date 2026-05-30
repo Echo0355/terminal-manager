@@ -28,7 +28,6 @@ import {
   statusCwd,
   statusPanes,
   statusShell,
-  tabAddBtn,
   tabBar,
   tabs,
   terminalContainer
@@ -45,14 +44,12 @@ registerFocusPaneCallback((tab, paneId) => {
   focusPane(tab, paneId)
 })
 
-let saveTimer: ReturnType<typeof setTimeout> | null = null
-
+/**
+ * 布局保存已禁用 — 每次启动为空白状态，退出时清空布局文件。
+ * 保留空函数以兼容各处调用。
+ */
 export function scheduleSaveLayout(): void {
-  if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = setTimeout(() => {
-    const state = serializeCurrentState()
-    void window.terminalAPI.saveLayout(state)
-  }, 500)
+  // no-op
 }
 
 registerSaveLayout(scheduleSaveLayout)
@@ -173,7 +170,7 @@ function mountTab(tab: Tab, beforeTab?: Tab | null): void {
     tabs.push(tab)
   }
 
-  const beforeEl = beforeIndex >= 0 ? beforeTab?.tabEl ?? tabAddBtn : tabAddBtn
+  const beforeEl = beforeIndex >= 0 ? beforeTab?.tabEl ?? null : null
   tabBar.insertBefore(tab.tabEl, beforeEl)
   terminalContainer.appendChild(tab.containerEl)
 }
@@ -181,7 +178,7 @@ function mountTab(tab: Tab, beforeTab?: Tab | null): void {
 function refreshTabBar(): void {
   for (const tab of tabs) {
     renderWorkspaceTab(tab, activeTab?.id === tab.id)
-    tabBar.insertBefore(tab.tabEl, tabAddBtn)
+    tabBar.insertBefore(tab.tabEl, null)
   }
 }
 

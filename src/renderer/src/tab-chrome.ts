@@ -1,10 +1,4 @@
-import type { LayoutNode, Pane, Tab } from './types'
-import { isLeaf } from './layout-ops'
-
-export interface TopBarEntry {
-  paneId: string
-  flex: number
-}
+import type { Pane, Tab } from './types'
 
 export function titleFromCwd(cwd?: string): string | null {
   if (!cwd) return null
@@ -15,26 +9,8 @@ export function getPaneDisplayTitle(pane: Pane, fallback: string): string {
   return pane.title || titleFromCwd(pane.cwd) || fallback
 }
 
-export function collectTopBarEntries(node: LayoutNode, flex = 1): TopBarEntry[] {
-  if (isLeaf(node)) {
-    return [{ paneId: node.paneId, flex }]
-  }
-
-  if (node.direction === 'horizontal') {
-    return node.children.flatMap((child, index) =>
-      collectTopBarEntries(child, flex * ((node.sizes[index] ?? 0) / 100))
-    )
-  }
-
-  const firstChild = node.children[0]
-  if (!firstChild) return []
-
-  return collectTopBarEntries(firstChild, flex)
-}
-
 interface PaneTabStripOptions {
   active?: boolean
-  inline?: boolean
   paneId: string
   tabId: string
   title: string
@@ -42,7 +18,7 @@ interface PaneTabStripOptions {
 
 export function createPaneTabStrip(options: PaneTabStripOptions): HTMLDivElement {
   const strip = document.createElement('div')
-  strip.className = options.inline ? 'pane-tab-strip pane-tab-strip-inline' : 'pane-tab-strip'
+  strip.className = 'pane-tab-strip'
   strip.setAttribute('data-pane-id', options.paneId)
   strip.setAttribute('data-tab-id', options.tabId)
 
@@ -82,7 +58,9 @@ function createWorkspaceClose(): HTMLSpanElement {
 }
 
 function renderRegularTab(tabEl: HTMLElement, tab: Tab, isActive: boolean): void {
-  tabEl.className = isActive ? 'tab active' : 'tab'
+  let cls = isActive ? 'tab active' : 'tab'
+  if (tab.panes.size > 1) cls += ' has-splits'
+  tabEl.className = cls
   tabEl.setAttribute('data-tab-id', tab.id)
   tabEl.setAttribute('draggable', 'true')
   tabEl.replaceChildren()
@@ -91,48 +69,19 @@ function renderRegularTab(tabEl: HTMLElement, tab: Tab, isActive: boolean): void
   titleEl.className = 'tab-title'
   titleEl.textContent = tab.title
 
-  tabEl.append(titleEl, createWorkspaceClose())
-}
-
-function renderSplitHostTab(tabEl: HTMLElement, tab: Tab): void {
-  tabEl.className = 'tab active tab-group-host'
-  tabEl.setAttribute('data-tab-id', tab.id)
-  tabEl.setAttribute('draggable', 'false')
-  tabEl.replaceChildren()
-
-  const track = document.createElement('div')
-  track.className = 'tab-group-track'
-
-  for (const entry of collectTopBarEntries(tab.layout)) {
-    const pane = tab.panes.get(entry.paneId)
-    if (!pane) continue
-
-    const segment = document.createElement('div')
-    segment.className = 'tab-group-segment'
-    segment.style.flex = `${Math.max(entry.flex, 0.0001)} 1 0`
-    segment.setAttribute('data-tab-id', tab.id)
-    segment.setAttribute('data-pane-id', entry.paneId)
-
-    segment.appendChild(createPaneTabStrip({
-      active: entry.paneId === tab.focusedPaneId,
-      inline: true,
-      paneId: entry.paneId,
-      tabId: tab.id,
-      title: getPaneDisplayTitle(pane, tab.title)
-    }))
-
-    track.appendChild(segment)
+  const children: Node[] = [titleEl]
+  // 分屏时在标题后显示面板数量角标
+  if (tab.panes.size > 1) {
+    const badge = document.createElement('span')
+    badge.className = 'tab-split-badge'
+    badge.textContent = String(tab.panes.size)
+    children.push(badge)
   }
-
-  tabEl.appendChild(track)
+  children.push(createWorkspaceClose())
+  tabEl.append(...children)
 }
 
 export function renderWorkspaceTab(tab: Tab, isActive: boolean): void {
-  const shouldRenderSplitHost = isActive && !isLeaf(tab.layout)
-  if (shouldRenderSplitHost) {
-    renderSplitHostTab(tab.tabEl, tab)
-    return
-  }
-
+  // 始终渲染普通标签，分屏面板标签由 layout-render.ts 在终端区域内渲染
   renderRegularTab(tab.tabEl, tab, isActive)
 }

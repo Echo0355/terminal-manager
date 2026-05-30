@@ -8,12 +8,12 @@
 import {
   tabs, activeTab, appConfig, setAppConfig, sidebarWidth, setSidebarWidth, loading, sidebar,
   settingsOverlay, settingsClose, settingsCancel, settingsSave, confirmOverlay,
-  tabAddBtn, btnAddProject, statusThemeToggle,
+  btnAddProject, statusThemeToggle,
   btnToggleSidebar, btnOpenSettings
 } from './state'
 import { handleConfirmCancel } from './ui-utils'
-import { scheduleSaveLayout, addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, closeCurrentPane, focusDirection, restoreLayout, updatePaneCount, splitHorizontal, splitVertical } from './tab-pane-manager'
-import { fitAllPanes, initWindowResizeHandler } from './layout-render'
+import { addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, closeCurrentPane, focusDirection, updatePaneCount, splitHorizontal, splitVertical } from './tab-pane-manager'
+import { fitAllPanes, initWindowResizeHandler, initIMEHandling } from './layout-render'
 import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './settings'
 import { loadProjects, addProject } from './project-manager'
 import { initDragDrop } from './drag-drop'
@@ -47,14 +47,12 @@ function initSidebarResize(): void {
   document.addEventListener('mouseup', () => {
     if (isResizing) {
       isResizing = false
-      scheduleSaveLayout()
     }
   })
 }
 
 // ── 事件绑定 ──
 
-tabAddBtn.addEventListener('click', () => addTab())
 btnAddProject.addEventListener('click', () => addProject())
 
 settingsClose.addEventListener('click', closeSettings)
@@ -169,10 +167,6 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-window.addEventListener('resize', () => {
-  if (activeTab) fitAllPanes(activeTab)
-})
-
 // ── 初始化 ──
 
 async function main(): Promise<void> {
@@ -182,13 +176,8 @@ async function main(): Promise<void> {
     await loadProjects()
     initSidebarResize()
 
-    const restored = await restoreLayout()
-
-    if (!restored) {
-      await addTab()
-    }
-
     initDragDrop()
+    initIMEHandling()
     initWindowResizeHandler()
     updatePaneCount()
     loading.classList.add('hidden')

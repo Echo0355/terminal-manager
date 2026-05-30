@@ -61,7 +61,6 @@ export function requestSaveLayout(): void {
 // ── DOM 元素引用 ──
 
 export const tabBar = document.getElementById('tab-bar')!
-export const tabAddBtn = document.getElementById('tab-add')!
 export const terminalContainer = document.getElementById('terminal-container')!
 export const terminalWorkspace = document.createElement('div')
 terminalWorkspace.id = 'terminal-workspace'

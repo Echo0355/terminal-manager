@@ -1,6 +1,6 @@
 import type { ContainerNode, LayoutNode, Pane, Tab } from './types'
 import { isLeaf } from './layout-ops'
-import { activeTab, requestSaveLayout, tabBar, tabs, terminalContainer } from './state'
+import { activeTab, requestSaveLayout, tabs, terminalContainer } from './state'
 import { createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
 
 type ClosePaneCallback = (tab: Tab, paneId: string) => void
@@ -10,6 +10,31 @@ let closePaneCallback: ClosePaneCallback | null = null
 let focusPaneCallback: FocusPaneCallback | null = null
 let closeListenersBound = false
 let focusListenersBound = false
+
+/**
+ * IME（输入法）活动状态标志
+ *
+ * 当用户使用中文、日文等输入法时，此标志为 true。
+ * 在 IME 输入期间，应暂停 fitAllPanes 等自动调整操作，
+ * 避免输入法候选窗口触发的 resize 事件导致终端内容被挤压。
+ */
+let isIMEActive = false
+
+/**
+ * 初始化 IME 状态检测
+ *
+ * 监听全局的 compositionstart 和 compositionend 事件，
+ * 跟踪输入法的活动状态。在 IME 活动期间，fitAllPanes 会被跳过。
+ */
+export function initIMEHandling(): void {
+  document.addEventListener('compositionstart', () => {
+    isIMEActive = true
+  })
+
+  document.addEventListener('compositionend', () => {
+    isIMEActive = false
+  })
+}
 
 export function registerClosePaneCallback(fn: ClosePaneCallback): void {
   closePaneCallback = fn
@@ -34,7 +59,6 @@ export function registerClosePaneCallback(fn: ClosePaneCallback): void {
   }
 
   terminalContainer.addEventListener('click', handleCloseClick)
-  tabBar.addEventListener('click', handleCloseClick)
 }
 
 export function registerFocusPaneCallback(fn: FocusPaneCallback): void {
@@ -57,7 +81,6 @@ export function registerFocusPaneCallback(fn: FocusPaneCallback): void {
   }
 
   terminalContainer.addEventListener('mousedown', handleFocusMouseDown)
-  tabBar.addEventListener('mousedown', handleFocusMouseDown)
 }
 
 export function renderLayout(tab: Tab): void {
@@ -66,7 +89,7 @@ export function renderLayout(tab: Tab): void {
   }
 
   tab.containerEl.replaceChildren()
-  renderNode(tab.layout, tab.containerEl, tab, true)
+  renderNode(tab.layout, tab.containerEl, tab)
 
   if (isTabVisible(tab)) {
     fitAllPanes(tab)
@@ -82,12 +105,12 @@ function isTabVisible(tab: Tab): boolean {
   )
 }
 
-function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab, suppressHeader: boolean): void {
+function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab): void {
   if (isLeaf(node)) {
     const pane = tab.panes.get(node.paneId)
     if (!pane) return
 
-    const frame = createPaneFrame(pane, tab, node.paneId, !suppressHeader)
+    const frame = createPaneFrame(pane, tab, node.paneId, true)
     container.appendChild(frame)
 
     pane.element.setAttribute('data-pane-id', node.paneId)
@@ -113,8 +136,7 @@ function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab, suppress
     childContainer.style.position = 'relative'
     childContainer.style.overflow = 'hidden'
 
-    const childSuppressHeader = suppressHeader && (node.direction === 'horizontal' || index === 0)
-    renderNode(child, childContainer, tab, childSuppressHeader)
+    renderNode(child, childContainer, tab)
     wrapper.appendChild(childContainer)
 
     if (index < node.children.length - 1) {
@@ -125,14 +147,15 @@ function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab, suppress
   container.appendChild(wrapper)
 }
 
-function createPaneFrame(pane: Pane, tab: Tab, paneId: string, showHeader: boolean): HTMLElement {
+function createPaneFrame(pane: Pane, tab: Tab, paneId: string, _showHeader: boolean): HTMLElement {
   const frame = document.createElement('div')
   frame.className = 'pane-frame'
   frame.setAttribute('data-pane-id', paneId)
   frame.setAttribute('data-tab-id', tab.id)
   frame.classList.toggle('focused', paneId === tab.focusedPaneId)
 
-  if (tab.panes.size > 1 && showHeader) {
+  // 分屏时为每个面板显示标签栏（第二层标签栏）
+  if (tab.panes.size > 1) {
     frame.appendChild(
       createPaneTabStrip({
         active: paneId === tab.focusedPaneId,
@@ -382,6 +405,11 @@ function updateSashState(
 }
 
 export function fitAllPanes(tab: Tab): void {
+  // IME 输入期间跳过自动调整，避免输入法候选窗口触发 resize 导致终端内容被挤压
+  if (isIMEActive) {
+    return
+  }
+
   if (!tab.containerEl.isConnected || tab.containerEl.offsetWidth === 0 || tab.containerEl.offsetHeight === 0) {
     return
   }

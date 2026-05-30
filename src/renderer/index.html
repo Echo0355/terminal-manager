@@ -181,7 +181,7 @@
         border-right: 1px solid var(--tab-separator);
         cursor: pointer;
         white-space: nowrap;
-        flex-shrink: 0;
+        flex: 0 0 auto;
         user-select: none;
         position: relative;
         transition: background 0.1s ease, color 0.1s ease;
@@ -200,6 +200,7 @@
         background: var(--bg-base);
         color: var(--text-bright);
         border-right-color: var(--tab-separator);
+        flex: 0 1 auto;
       }
 
       .tab.active::before {
@@ -210,40 +211,6 @@
         right: 0;
         height: 1px;
         background: var(--accent);
-      }
-
-      .tab-group-host {
-        flex: 1 1 0;
-        gap: 0;
-        padding: 0;
-        min-width: 180px;
-        background: var(--bg-base);
-        overflow: hidden;
-      }
-
-      .tab-group-host:hover {
-        background: var(--bg-base);
-      }
-
-      .tab-group-host::before {
-        display: none;
-      }
-
-      .tab-group-track {
-        display: flex;
-        flex: 1 1 auto;
-        width: 100%;
-        height: 100%;
-        min-width: 0;
-        overflow: hidden;
-      }
-
-      .tab-group-segment {
-        display: flex;
-        flex-basis: 0;
-        flex-shrink: 1;
-        min-width: 0;
-        border-right: 1px solid var(--tab-separator);
       }
 
       .tab-title {
@@ -278,25 +245,34 @@
         color: var(--text-primary);
       }
 
-      #tab-add {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 35px;
-        height: 35px;
-        border: none;
-        background: transparent;
-        color: var(--text-muted);
-        font-size: 16px;
-        cursor: pointer;
-        flex-shrink: 0;
-        transition: background 0.1s ease, color 0.1s ease;
+      /* 有分屏的标签 — 标题使用亮色 */
+      .tab.has-splits .tab-title {
+        color: var(--text-bright);
       }
 
-      #tab-add:hover {
-        background: var(--bg-hover);
-        color: var(--text-primary);
+      /* 分屏数量角标 */
+      .tab-split-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1;
+        flex-shrink: 0;
       }
+
+      /* 非活跃标签的角标降低不透明度 */
+      .tab:not(.active) .tab-split-badge {
+        background: var(--text-muted);
+        opacity: 0.6;
+      }
+
 
       /* ── 主内容区 ── */
       #main {
@@ -688,15 +664,6 @@
         z-index: 20;
       }
 
-      .pane-tab-strip-inline {
-        width: 100%;
-        height: 35px;
-        flex: 1 1 auto;
-        min-width: 0;
-        border-bottom: none;
-        background: transparent;
-      }
-
       .pane-tab {
         display: flex;
         align-items: center;
@@ -711,17 +678,6 @@
         user-select: none;
         cursor: grab;
         position: relative;
-      }
-
-      .pane-tab-strip-inline .pane-tab {
-        height: 35px;
-        max-width: none;
-        flex: 1 1 auto;
-      }
-
-      .pane-tab-strip-inline .pane-close-btn {
-        margin-top: 6px;
-        margin-bottom: 6px;
       }
 
       .pane-tab:hover,
@@ -1341,7 +1297,6 @@
 
     <div id="app">
       <div id="tab-bar">
-        <button id="tab-add" title="新建标签 (Ctrl+T)">+</button>
       </div>
 
       <div id="main">

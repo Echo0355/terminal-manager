@@ -35,7 +35,7 @@ export function renderProjectList(): void {
       </span>
     `
 
-    item.querySelector('.project-name')!.addEventListener('click', () => {
+    item.querySelector('.project-name')!.addEventListener('dblclick', () => {
       addTab(project.path)
     })
 
