@@ -1,0 +1,31 @@
+appId: com.terminal-manager.app
+productName: Terminal Manager
+directories:
+  buildResources: build
+  output: dist
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!docs/*'
+  - '!electron.vite.config.*'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!{vitest.config.ts,*.test.ts}'
+  - '!{package-lock.json,yarn.lock,pnpm-lock.yaml}'
+asarUnpack:
+  - '**/*.node'
+  - 'node_modules/node-pty/**/*'
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  artifactName: ${productName}-${version}-Setup.${ext}
+  shortcutName: Terminal Manager
+  uninstallDisplayName: Terminal Manager
+  createDesktopShortcut: always
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+npmRebuild: false
