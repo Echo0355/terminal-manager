@@ -1,3 +1,10 @@
+/**
+ * 项目模块测试
+ *
+ * 测试 project.ts 中的项目数据校验逻辑。
+ * 覆盖有效输入、无效输入、边界条件等场景。
+ */
+
 import { describe, it, expect } from 'vitest'
 import { validateProject, validateProjectList, type Project } from './project'
 

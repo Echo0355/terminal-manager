@@ -1,3 +1,10 @@
+/**
+ * 配置模块测试
+ *
+ * 测试 config.ts 中的工具函数和配置校验逻辑。
+ * 使用 Vitest 测试框架，node 环境运行。
+ */
+
 import { describe, it, expect } from 'vitest'
 import { clamp, getDefaultConfig, validateConfig, type Config } from './config'
 
