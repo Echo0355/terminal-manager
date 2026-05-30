@@ -214,6 +214,10 @@ contextBridge.exposeInMainWorld('terminalAPI', {
     project?: { id: string; name: string; path: string }
     error?: string
   }> => {
+    // 纵深防御：预加载层基本参数校验
+    if (projectPath !== undefined && (typeof projectPath !== 'string' || projectPath.length > 2000 || projectPath.length === 0)) {
+      return Promise.resolve({ success: false, error: '无效的路径' })
+    }
     return ipcRenderer.invoke('project:add', projectPath)
   },
 
@@ -259,7 +263,13 @@ contextBridge.exposeInMainWorld('terminalAPI', {
     }>
     activeTabId: string
   } | null> => {
-    return ipcRenderer.invoke('layout:load')
+    return ipcRenderer.invoke('layout:load').then((data: any) => {
+      // 纵深防御：校验主进程返回的布局数据基本结构
+      if (data === null || data === undefined) return null
+      if (typeof data !== 'object') return null
+      if (!Array.isArray(data.tabs)) return null
+      return data
+    })
   },
 
   /**

@@ -163,8 +163,18 @@ export interface TerminalAPI {
    */
   writeToTerminal: (id: string, data: string) => void
 
+  /**
+   * 写入文本到系统剪贴板
+   *
+   * @param text - 要写入的文本内容
+   */
   writeClipboardText: (text: string) => void
 
+  /**
+   * 从系统剪贴板读取文本
+   *
+   * @returns 剪贴板中的文本内容
+   */
   readClipboardText: () => string
 
   /**

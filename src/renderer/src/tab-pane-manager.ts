@@ -1,3 +1,10 @@
+/**
+ * 标签页与面板生命周期管理
+ *
+ * 负责终端面板的创建、切换、分屏、关闭及拖拽操作。
+ * 管理标签页的创建/切换/关闭，以及布局的序列化和恢复。
+ */
+
 import { FitAddon } from '@xterm/addon-fit'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import { Terminal } from '@xterm/xterm'
@@ -570,7 +577,8 @@ async function restoreTab(tabState: TabState, isActive: boolean): Promise<void> 
         title: paneState.title || titleFromCwd(paneState.cwd !== '~' ? paneState.cwd : undefined) || tabState.title
       })
       restoredPanes.set(paneState.id, pane)
-    } catch {
+    } catch (err) {
+      console.warn('面板恢复失败:', paneState.id, err)
       continue
     }
   }

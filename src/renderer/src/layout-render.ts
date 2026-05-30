@@ -2,6 +2,7 @@ import type { ContainerNode, LayoutNode, Pane, Tab } from './types'
 import { isLeaf } from './layout-ops'
 import { activeTab, requestSaveLayout, tabs, terminalContainer } from './state'
 import { createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
+import { normalizeSizes } from './layout-utils'
 
 type ClosePaneCallback = (tab: Tab, paneId: string) => void
 type FocusPaneCallback = (tab: Tab, paneId: string) => void
@@ -352,27 +353,6 @@ function startResize(
 
   document.addEventListener('mousemove', onMouseMove)
   document.addEventListener('mouseup', onMouseUp)
-}
-
-/**
- * 规范化容器 sizes 为精确百分比（总和 = 100）
- *
- * 拖拽过程中 sizes 可能因浮点运算产生微小误差，
- * 鼠标释放时调用此函数确保数据一致性。
- */
-function normalizeSizes(container: ContainerNode): void {
-  const total = container.sizes.reduce((a, b) => a + b, 0)
-  if (total <= 0) return
-
-  for (let i = 0; i < container.sizes.length; i++) {
-    container.sizes[i] = (container.sizes[i] / total) * 100
-  }
-
-  // 修正浮点误差：确保总和精确为 100
-  const sum = container.sizes.reduce((a, b) => a + b, 0)
-  if (Math.abs(sum - 100) > 0.01 && container.sizes.length > 0) {
-    container.sizes[container.sizes.length - 1] += 100 - sum
-  }
 }
 
 /**

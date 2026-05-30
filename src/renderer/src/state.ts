@@ -11,6 +11,8 @@ export let activeTab: Tab | null = null
 export let tabIndex = 0
 export let paneCounter = 0
 export let projects: Project[] = []
+// 初始默认值，启动时会被主进程加载的配置覆盖
+// 注：无法使用 shared/config.ts 的 getDefaultConfig()，因其依赖 process.platform（渲染进程不可用）
 export let appConfig: Config = {
   general: {
     defaultShell: 'powershell.exe',

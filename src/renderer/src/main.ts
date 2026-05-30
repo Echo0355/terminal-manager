@@ -12,13 +12,21 @@ import {
   btnToggleSidebar, btnOpenSettings
 } from './state'
 import { handleConfirmCancel } from './ui-utils'
-import { addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, closeCurrentPane, focusDirection, updatePaneCount, splitHorizontal, splitVertical } from './tab-pane-manager'
+import {
+  addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab,
+  closeCurrentPane, focusDirection, updatePaneCount, splitHorizontal, splitVertical
+} from './tab-pane-manager'
 import { fitAllPanes, initWindowResizeHandler, initIMEHandling } from './layout-render'
 import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './settings'
 import { loadProjects, addProject } from './project-manager'
 import { initDragDrop } from './drag-drop'
 
 // ── 侧边栏宽度拖拽 ──
+
+/** 侧边栏最小宽度（像素） */
+const SIDEBAR_MIN_WIDTH = 150
+/** 侧边栏最大宽度（像素） */
+const SIDEBAR_MAX_WIDTH = 400
 
 function initSidebarResize(): void {
   let isResizing = false
@@ -39,7 +47,7 @@ function initSidebarResize(): void {
   document.addEventListener('mousemove', (e) => {
     if (!isResizing) return
     const delta = e.clientX - startX
-    const newWidth = Math.max(150, Math.min(400, startWidth + delta))
+    const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, startWidth + delta))
     sidebar.style.width = `${newWidth}px`
     setSidebarWidth(newWidth)
   })

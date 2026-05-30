@@ -3,7 +3,7 @@
  */
 
 import { BrowserWindow, ipcMain, dialog, nativeTheme } from 'electron'
-import { existsSync, statSync, accessSync, constants } from 'fs'
+import { existsSync, statSync } from 'fs'
 import { basename } from 'path'
 import * as pty from 'node-pty'
 
@@ -13,6 +13,7 @@ import {
   loadProjects, saveProjects, loadLayoutState, saveLayoutState, generateProjectId,
   type Config, type Project
 } from './data-store'
+import { isValidString, isValidNumber, validateCwd } from './validation'
 
 // ── PTY 会话 ──
 
@@ -48,32 +49,6 @@ function getEffectiveCwd(): string {
   return appConfig.general.defaultCwd || getDefaultCwd()
 }
 
-function validateCwd(requestedCwd?: string): string {
-  const cwd = requestedCwd || getEffectiveCwd()
-  try {
-    if (existsSync(cwd)) {
-      const stat = statSync(cwd)
-      if (stat.isDirectory()) {
-        accessSync(cwd, constants.R_OK | constants.X_OK)
-        return cwd
-      }
-    }
-  } catch {
-    // ignore
-  }
-  const fallback = getDefaultCwd()
-  console.warn(`目录不存在或无权限: ${cwd}，回退到: ${fallback}`)
-  return fallback
-}
-
-function isValidString(value: any, maxLength = 1000): value is string {
-  return typeof value === 'string' && value.length > 0 && value.length <= maxLength
-}
-
-function isValidNumber(value: any, min: number, max: number): value is number {
-  return typeof value === 'number' && !isNaN(value) && value >= min && value <= max
-}
-
 function createPty(options: {
   shell?: string
   cwd?: string
@@ -81,7 +56,7 @@ function createPty(options: {
   rows?: number
 }): { id: string; shell: string; cwd: string } {
   const shellPath = shellValidator.resolve(options.shell, appConfig.general.defaultShell)
-  const cwd = validateCwd(options.cwd)
+  const cwd = validateCwd(options.cwd, getEffectiveCwd)
   const cols = isValidNumber(options.cols, 1, 1000) ? options.cols : 80
   const rows = isValidNumber(options.rows, 1, 500) ? options.rows : 24
   const id = generateId()

@@ -79,6 +79,7 @@ export function getDefaultConfig(platform: NodeJS.Platform = process.platform): 
  * @param platform - 运行平台，用于生成默认值
  * @returns 校验后的配置对象，保证所有字段有效
  */
+// TODO: 将 data 参数类型改为 unknown 以增强类型安全（需要同步修改 data-store.ts 中的调用方）
 export function validateConfig(data: any, platform: NodeJS.Platform = process.platform): Config {
   const defaults = getDefaultConfig(platform)
 

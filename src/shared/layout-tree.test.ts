@@ -214,7 +214,7 @@ describe('removeFromLayout', () => {
     // 原始 sizes [33, 33, 34]，移除 B(33) 后，A 和 C 按比例重分配
     // A: 33/(33+34) * 100 ≈ 49.25，C: 34/(33+34) * 100 ≈ 50.75
     const total = container.sizes.reduce((a: number, b: number) => a + b, 0)
-    expect(Math.abs(total - 100)).toBeLessThan(1)
+    expect(Math.abs(total - 100)).toBeLessThan(0.1)
   })
 
   it('Distribute 模式：移除面板后 sizes 总和精确为 100', () => {
@@ -225,7 +225,7 @@ describe('removeFromLayout', () => {
     expect(isContainer(result!)).toBe(true)
     const container = result as any
     const total = container.sizes.reduce((a: number, b: number) => a + b, 0)
-    expect(Math.abs(total - 100)).toBeLessThan(1)
+    expect(Math.abs(total - 100)).toBeLessThan(0.1)
   })
 })
 

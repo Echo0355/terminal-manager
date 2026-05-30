@@ -30,7 +30,7 @@ export function createPaneTabStrip(options: PaneTabStripOptions): HTMLDivElement
   paneTab.setAttribute('draggable', 'true')
   paneTab.setAttribute('data-pane-id', options.paneId)
   paneTab.setAttribute('data-tab-id', options.tabId)
-  paneTab.title = 'Drag to move this split pane'
+  paneTab.title = '拖拽移动此分屏面板'
 
   const titleEl = document.createElement('span')
   titleEl.className = 'pane-tab-title'
@@ -41,7 +41,7 @@ export function createPaneTabStrip(options: PaneTabStripOptions): HTMLDivElement
   closeBtn.className = 'pane-close-btn'
   closeBtn.type = 'button'
   closeBtn.textContent = '×'
-  closeBtn.title = 'Close pane'
+  closeBtn.title = '关闭面板'
   closeBtn.setAttribute('draggable', 'false')
 
   strip.appendChild(paneTab)
@@ -53,7 +53,7 @@ function createWorkspaceClose(): HTMLSpanElement {
   const closeEl = document.createElement('span')
   closeEl.className = 'tab-close'
   closeEl.textContent = '×'
-  closeEl.title = 'Close tab'
+  closeEl.title = '关闭标签'
   return closeEl
 }
 

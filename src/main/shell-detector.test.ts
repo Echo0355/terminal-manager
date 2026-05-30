@@ -7,7 +7,7 @@
  * - detectShells 在不同平台和文件系统状态下的行为
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createShellValidator, type ShellInfo } from './shell-detector'
 
 // mock fs 模块
@@ -98,6 +98,10 @@ describe('detectShells', () => {
     vi.clearAllMocks()
   })
 
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('win32 平台始终包含 PowerShell 和 CMD', async () => {
     vi.stubGlobal('process', { ...process, platform: 'win32' })
     vi.mocked(existsSync).mockReturnValue(false)
@@ -141,13 +145,15 @@ describe('detectShells', () => {
     process.env.COMSPEC = 'C:\\Windows\\System32\\cmd.exe'
     vi.mocked(existsSync).mockReturnValue(false)
 
-    const { detectShells } = await import('./shell-detector')
-    const shells = detectShells()
+    try {
+      const { detectShells } = await import('./shell-detector')
+      const shells = detectShells()
 
-    const cmd = shells.find(s => s.name === 'CMD')
-    expect(cmd!.path).toBe('C:\\Windows\\System32\\cmd.exe')
-
-    process.env.COMSPEC = originalComspec
+      const cmd = shells.find(s => s.name === 'CMD')
+      expect(cmd!.path).toBe('C:\\Windows\\System32\\cmd.exe')
+    } finally {
+      process.env.COMSPEC = originalComspec
+    }
   })
 
   it('非 win32 平台检测存在的 shell', async () => {
