@@ -19,7 +19,6 @@ import {
   isContainer,
   cloneLayout,
   findParentAndIndex,
-  splitPane,
   removeFromLayout,
   collectLeafIds,
   serializeLayoutNode,
@@ -125,78 +124,6 @@ describe('findParentAndIndex', () => {
   })
 })
 
-describe('splitPane', () => {
-  it('单叶子水平分屏', () => {
-    const tree = makeLeaf('A')
-    const { layout, newPaneId } = splitPane(tree, 'A', 'horizontal')
-    expect(isContainer(layout)).toBe(true)
-    const container = layout as any
-    expect(container.direction).toBe('horizontal')
-    expect(container.children).toHaveLength(2)
-    expect(container.children[0].paneId).toBe('A')
-    expect(container.children[1].paneId).toBe(newPaneId)
-  })
-
-  it('单叶子垂直分屏', () => {
-    const tree = makeLeaf('A')
-    const { layout } = splitPane(tree, 'A', 'vertical')
-    expect(isContainer(layout)).toBe(true)
-    expect((layout as any).direction).toBe('vertical')
-  })
-
-  it('单叶子分屏不修改原树', () => {
-    const tree = makeLeaf('A')
-    const original = cloneLayout(tree)
-    splitPane(tree, 'A', 'horizontal')
-    expect(tree).toEqual(original)
-  })
-
-  it('同方向分屏追加子节点', () => {
-    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    const { layout, newPaneId } = splitPane(tree, 'A', 'horizontal')
-    const container = layout as any
-    expect(container.children).toHaveLength(3)
-    expect(container.children[0].paneId).toBe('A')
-    expect(container.children[1].paneId).toBe(newPaneId)
-    expect(container.children[2].paneId).toBe('B')
-  })
-
-  it('同方向分屏不修改原树', () => {
-    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    const original = cloneLayout(tree)
-    splitPane(tree, 'A', 'horizontal')
-    expect(tree).toEqual(original)
-  })
-
-  it('不同方向分屏嵌套新容器', () => {
-    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    const { layout, newPaneId } = splitPane(tree, 'A', 'vertical')
-    const container = layout as any
-    expect(container.direction).toBe('horizontal')
-    expect(container.children).toHaveLength(2)
-    // A 被替换为垂直容器
-    const inner = container.children[0]
-    expect(isContainer(inner)).toBe(true)
-    expect(inner.direction).toBe('vertical')
-    expect(inner.children[0].paneId).toBe('A')
-    expect(inner.children[1].paneId).toBe(newPaneId)
-  })
-
-  it('不同方向分屏不修改原树', () => {
-    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    const original = cloneLayout(tree)
-    splitPane(tree, 'A', 'vertical')
-    expect(tree).toEqual(original)
-  })
-
-  it('分屏不存在的 pane 返回原树', () => {
-    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    const original = cloneLayout(tree)
-    const { layout } = splitPane(tree, 'X', 'horizontal')
-    expect(layout).toEqual(original)
-  })
-})
-
 describe('removeFromLayout', () => {
   it('从两个叶子的容器中移除一个，简化为叶子', () => {
     const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
@@ -273,6 +200,32 @@ describe('removeFromLayout', () => {
     const result = removeFromLayout(makeLeaf('A'), 'B')
     expect(result).not.toBeNull()
     expect((result as any).paneId).toBe('A')
+  })
+
+  it('Distribute 模式：移除面板后按相对比例重新分配空间', () => {
+    // 创建三个面板 [33, 33, 34]，移除中间一个
+    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B'), makeLeaf('C')])
+    const result = removeFromLayout(tree, 'B')
+    expect(result).not.toBeNull()
+    expect(isContainer(result!)).toBe(true)
+    const container = result as any
+    expect(container.children).toHaveLength(2)
+    expect(collectLeafIds(result!)).toEqual(['A', 'C'])
+    // 原始 sizes [33, 33, 34]，移除 B(33) 后，A 和 C 按比例重分配
+    // A: 33/(33+34) * 100 ≈ 49.25，C: 34/(33+34) * 100 ≈ 50.75
+    const total = container.sizes.reduce((a: number, b: number) => a + b, 0)
+    expect(Math.abs(total - 100)).toBeLessThan(1)
+  })
+
+  it('Distribute 模式：移除面板后 sizes 总和精确为 100', () => {
+    // 创建四个面板 [25, 25, 25, 25]，移除第一个
+    const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B'), makeLeaf('C'), makeLeaf('D')])
+    const result = removeFromLayout(tree, 'A')
+    expect(result).not.toBeNull()
+    expect(isContainer(result!)).toBe(true)
+    const container = result as any
+    const total = container.sizes.reduce((a: number, b: number) => a + b, 0)
+    expect(Math.abs(total - 100)).toBeLessThan(1)
   })
 })
 

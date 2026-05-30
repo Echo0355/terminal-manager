@@ -35,6 +35,7 @@ export interface PaneState {
   id: string
   shell: string
   cwd: string
+  title?: string
 }
 
 export interface TabState {
@@ -73,6 +74,7 @@ export interface Pane {
   sessionId: string
   shell: string
   cwd: string
+  title?: string
   terminal: Terminal
   fitAddon: FitAddon
   element: HTMLElement

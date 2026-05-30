@@ -212,6 +212,40 @@
         background: var(--accent);
       }
 
+      .tab-group-host {
+        flex: 1 1 0;
+        gap: 0;
+        padding: 0;
+        min-width: 180px;
+        background: var(--bg-base);
+        overflow: hidden;
+      }
+
+      .tab-group-host:hover {
+        background: var(--bg-base);
+      }
+
+      .tab-group-host::before {
+        display: none;
+      }
+
+      .tab-group-track {
+        display: flex;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .tab-group-segment {
+        display: flex;
+        flex-basis: 0;
+        flex-shrink: 1;
+        min-width: 0;
+        border-right: 1px solid var(--tab-separator);
+      }
+
       .tab-title {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -269,6 +303,7 @@
         display: flex;
         flex: 1;
         overflow: hidden;
+        min-height: 0;
       }
 
       /* ── 活动栏（VS Code 标志性左侧图标栏） ── */
@@ -503,11 +538,21 @@
       }
 
       /* ── 终端区域 ── */
+      #terminal-workspace {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+      }
+
       #terminal-container {
         flex: 1;
         position: relative;
         overflow: hidden;
         background: var(--bg-base);
+        min-height: 0;
       }
 
       .tab-content {
@@ -516,20 +561,40 @@
       }
 
       /* ── Pane 样式 ── */
+      .pane-frame {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        position: relative;
+        border: 1px solid transparent;
+        background: var(--bg-base);
+        transition: border-color 0.1s ease, opacity 0.1s ease;
+      }
+
+      .pane-frame.focused {
+        border-color: var(--border-subtle);
+      }
+
+      .pane-frame:not(.focused) {
+        opacity: 0.78;
+      }
+
+      .pane-frame-body {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 0;
+        position: relative;
+      }
+
       .pane {
         width: 100%;
         height: 100%;
         position: relative;
-        border: 1px solid transparent;
-        transition: border-color 0.1s ease, opacity 0.1s ease;
-      }
-
-      .pane.focused {
-        border-color: var(--border-subtle);
-      }
-
-      .pane:not(.focused) {
-        opacity: 0.75;
+        min-width: 0;
+        min-height: 0;
       }
 
       .pane .xterm {
@@ -589,6 +654,215 @@
 
       .pane-splitter.dragging {
         opacity: 1;
+      }
+
+      /* Sash 边界状态 — 对标 VS Code SashState */
+      .pane-splitter.sash-at-minimum {
+        background: var(--accent) !important;
+        opacity: 0.8;
+      }
+
+      .pane-splitter.sash-at-maximum {
+        background: var(--accent) !important;
+        opacity: 0.8;
+      }
+
+      /* ── 拖拽分屏 ── */
+      .tab.dragging {
+        opacity: 0.5;
+      }
+
+      .pane-dragging {
+        opacity: 0.45;
+      }
+
+      .pane-tab-strip {
+        display: flex;
+        align-items: stretch;
+        height: 32px;
+        flex: 0 0 32px;
+        min-width: 0;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border-default);
+        overflow: hidden;
+        z-index: 20;
+      }
+
+      .pane-tab-strip-inline {
+        width: 100%;
+        height: 35px;
+        flex: 1 1 auto;
+        min-width: 0;
+        border-bottom: none;
+        background: transparent;
+      }
+
+      .pane-tab {
+        display: flex;
+        align-items: center;
+        min-width: 72px;
+        max-width: min(220px, 100%);
+        height: 32px;
+        padding: 0 10px;
+        color: var(--text-secondary);
+        background: var(--bg-elevated);
+        border-right: 1px solid var(--tab-separator);
+        font-size: 12px;
+        user-select: none;
+        cursor: grab;
+        position: relative;
+      }
+
+      .pane-tab-strip-inline .pane-tab {
+        height: 35px;
+        max-width: none;
+        flex: 1 1 auto;
+      }
+
+      .pane-tab-strip-inline .pane-close-btn {
+        margin-top: 6px;
+        margin-bottom: 6px;
+      }
+
+      .pane-tab:hover,
+      .pane-tab.dragging {
+        color: var(--text-bright);
+        background: var(--bg-hover-strong);
+      }
+
+      .pane-frame.focused .pane-tab {
+        color: var(--text-bright);
+        background: var(--bg-base);
+      }
+
+      .pane-tab.active-pane-tab {
+        color: var(--text-bright);
+        background: var(--bg-base);
+      }
+
+      .pane-frame.focused .pane-tab::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--accent);
+      }
+
+      .pane-tab.active-pane-tab::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--accent);
+      }
+
+      .pane-tab:active {
+        cursor: grabbing;
+      }
+
+      .pane-tab-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      /* ── 拖拽放置 Overlay — 对标 VS Code 菱形指示器 ── */
+
+      .drop-zone-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 100;
+        pointer-events: none;
+      }
+
+      .drop-zone-indicator {
+        position: absolute;
+        background: rgba(0, 120, 212, 0.12);
+        border: 2px solid rgba(0, 120, 212, 0.5);
+        opacity: 0;
+        transition: opacity 0.1s ease;
+        pointer-events: none;
+      }
+
+      .drop-zone-indicator.active {
+        opacity: 1;
+      }
+
+      /* 中心区域 — 全面板高亮 */
+      .drop-zone-indicator[data-zone="center"] {
+        top: 4px; left: 4px; right: 4px; bottom: 4px;
+        border-radius: 4px;
+      }
+
+      /* 方向指示器 — VS Code 风格的边缘条 */
+      .drop-zone-indicator[data-zone="top"] {
+        top: 2px; left: 15%; right: 15%;
+        height: 35%;
+        border-radius: 4px 4px 50% 50%;
+        background: rgba(0, 120, 212, 0.18);
+        border: 2px solid rgba(0, 120, 212, 0.6);
+      }
+
+      .drop-zone-indicator[data-zone="bottom"] {
+        bottom: 2px; left: 15%; right: 15%;
+        height: 35%;
+        border-radius: 50% 50% 4px 4px;
+        background: rgba(0, 120, 212, 0.18);
+        border: 2px solid rgba(0, 120, 212, 0.6);
+      }
+
+      .drop-zone-indicator[data-zone="left"] {
+        left: 2px; top: 15%; bottom: 15%;
+        width: 35%;
+        border-radius: 4px 50% 50% 4px;
+        background: rgba(0, 120, 212, 0.18);
+        border: 2px solid rgba(0, 120, 212, 0.6);
+      }
+
+      .drop-zone-indicator[data-zone="right"] {
+        right: 2px; top: 15%; bottom: 15%;
+        width: 35%;
+        border-radius: 50% 4px 4px 50%;
+        background: rgba(0, 120, 212, 0.18);
+        border: 2px solid rgba(0, 120, 212, 0.6);
+      }
+
+      /* ── 面板关闭按钮 ── */
+      .pane-close-btn {
+        position: static;
+        margin: 4px 4px 4px auto;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        opacity: 0.65;
+        transition: opacity 0.15s ease, background 0.1s ease, color 0.1s ease;
+        cursor: pointer;
+      }
+
+      .pane-close-btn:hover {
+        opacity: 1 !important;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+      }
+
+      /* ── 标签栏拖拽放置高亮 ── */
+      #tab-bar.drag-over {
+        background: rgba(0, 120, 212, 0.15);
+        outline: 2px dashed rgba(0, 120, 212, 0.5);
+        outline-offset: -2px;
       }
 
       /* ── 状态栏 ── */

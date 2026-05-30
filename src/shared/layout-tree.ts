@@ -178,68 +178,6 @@ export function findParentAndIndex(
   return null
 }
 
-// ── 分屏操作（返回新树，不修改原树）──
-
-/**
- * 执行分屏操作
- *
- * 在指定面板的位置进行分屏，创建新的终端面板。
- * 支持两种分屏模式：
- * 1. 同方向分屏：在父容器中插入新面板
- * 2. 不同方向分屏：将当前面板替换为新的嵌套容器
- *
- * 操作是不可变的，返回新的布局树。
- *
- * @param layout - 当前布局树
- * @param paneId - 要分屏的面板 ID
- * @param direction - 分屏方向
- * @returns 新的布局树和新面板的 ID
- */
-export function splitPane(
-  layout: LayoutNode,
-  paneId: string,
-  direction: 'horizontal' | 'vertical'
-): { layout: LayoutNode; newPaneId: string } {
-  const newPaneId = `pane_${Date.now()}`
-
-  // 单叶子分屏：直接创建新的水平/垂直容器
-  if (isLeaf(layout)) {
-    if (layout.paneId !== paneId) return { layout, newPaneId }
-    const newLayout = makeContainer(direction, [
-      makeLeaf(paneId),
-      makeLeaf(newPaneId)
-    ])
-    return { layout: newLayout, newPaneId }
-  }
-
-  // 容器分屏：深拷贝后操作
-  const cloned = cloneLayout(layout) as ContainerNode
-  const found = findParentAndIndex(cloned, paneId)
-  if (!found) return { layout: cloned, newPaneId }
-
-  const { parent, index } = found
-
-  if (parent.direction === direction) {
-    // 同方向分屏：在父容器中插入新面板
-    parent.children.splice(index + 1, 0, makeLeaf(newPaneId))
-    // 重新计算所有子节点的尺寸
-    const count = parent.children.length
-    const size = Math.floor(100 / count)
-    parent.sizes = parent.children.map((_, i) =>
-      i === count - 1 ? 100 - size * (count - 1) : size
-    )
-  } else {
-    // 不同方向分屏：将当前面板替换为新的嵌套容器
-    const newContainer = makeContainer(direction, [
-      makeLeaf(paneId),
-      makeLeaf(newPaneId)
-    ])
-    parent.children[index] = newContainer
-  }
-
-  return { layout: cloned, newPaneId }
-}
-
 // ── 关闭面板（返回新树，可能为 null）──
 
 /**
@@ -285,10 +223,43 @@ export function removeFromLayout(node: LayoutNode, paneId: string): LayoutNode |
   if (newChildren.length === 0) return null
   if (newChildren.length === 1) return newChildren[0]
 
-  const size = Math.floor(100 / newChildren.length)
-  const sizes = newChildren.map((_, i) =>
-    i === newChildren.length - 1 ? 100 - size * (newChildren.length - 1) : size
-  )
+  // Distribute 模式：按相对比例重新分配被移除面板的空间
+  const removedCount = node.children.length - newChildren.length
+  const currentTotal = node.sizes
+    .filter((_, i) => {
+      // 保留未被移除的子节点对应的 size
+      const child = node.children[i]
+      if (isLeaf(child)) return child.paneId !== paneId
+      return true
+    })
+    .reduce((a, b) => a + b, 0)
+
+  const scaleFactor = currentTotal > 0 ? 100 / currentTotal : 100 / newChildren.length
+  const sizes = newChildren.map((_, i) => {
+    // 找到原始 sizes 中对应的比例
+    let originalIndex = -1
+    let count = 0
+    for (let j = 0; j < node.children.length; j++) {
+      const child = node.children[j]
+      const shouldKeep = isLeaf(child) ? child.paneId !== paneId : true
+      if (shouldKeep) {
+        if (count === i) {
+          originalIndex = j
+          break
+        }
+        count++
+      }
+    }
+    return originalIndex >= 0
+      ? Math.round(node.sizes[originalIndex] * scaleFactor * 100) / 100
+      : Math.round(100 / newChildren.length * 100) / 100
+  })
+
+  // 修正浮点误差
+  const total = sizes.reduce((a, b) => a + b, 0)
+  if (Math.abs(total - 100) > 0.01 && sizes.length > 0) {
+    sizes[sizes.length - 1] = Math.round((100 - total + sizes[sizes.length - 1]) * 100) / 100
+  }
 
   return { ...node, children: newChildren, sizes }
 }

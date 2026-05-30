@@ -55,9 +55,15 @@ export function createMenu(mainWindow: BrowserWindow | null): void {
       submenu: [
         { label: '新建终端', click: () => send('menu:new-tab') },
         { type: 'separator' },
-        { label: '水平分屏', accelerator: 'Alt+Shift+-', click: () => send('menu:split-h') },
-        { label: '垂直分屏', accelerator: 'Alt+Shift+=', click: () => send('menu:split-v') },
+        { label: '水平分屏（左右）', accelerator: 'CmdOrCtrl+Shift+D', click: () => send('menu:split-horizontal') },
+        { label: '垂直分屏（上下）', accelerator: 'CmdOrCtrl+Shift+Alt+D', click: () => send('menu:split-vertical') },
+        { type: 'separator' },
         { label: '关闭面板', accelerator: 'Alt+Shift+W', click: () => send('menu:close-pane') },
+        { type: 'separator' },
+        { label: '聚焦左侧面板', accelerator: 'Alt+Left', click: () => send('menu:focus-left') },
+        { label: '聚焦右侧面板', accelerator: 'Alt+Right', click: () => send('menu:focus-right') },
+        { label: '聚焦上方面板', accelerator: 'Alt+Up', click: () => send('menu:focus-up') },
+        { label: '聚焦下方面板', accelerator: 'Alt+Down', click: () => send('menu:focus-down') },
         { type: 'separator' },
         { label: '上一个标签', accelerator: 'CmdOrCtrl+Shift+Tab', click: () => send('menu:prev-tab') },
         { label: '下一个标签', accelerator: 'CmdOrCtrl+Tab', click: () => send('menu:next-tab') }

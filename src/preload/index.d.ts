@@ -34,6 +34,8 @@ export interface PaneState {
   shell: string
   /** 工作目录 */
   cwd: string
+  /** 面板标题 */
+  title?: string
 }
 
 /**
@@ -160,6 +162,10 @@ export interface TerminalAPI {
    * @param data - 要写入的数据
    */
   writeToTerminal: (id: string, data: string) => void
+
+  writeClipboardText: (text: string) => void
+
+  readClipboardText: () => string
 
   /**
    * 调整终端大小

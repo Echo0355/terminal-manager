@@ -12,10 +12,11 @@ import {
   btnToggleSidebar, btnOpenSettings
 } from './state'
 import { handleConfirmCancel } from './ui-utils'
-import { scheduleSaveLayout, addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, splitPane, closeCurrentPane, focusDirection, restoreLayout, updatePaneCount } from './tab-pane-manager'
-import { fitAllPanes } from './layout-render'
+import { scheduleSaveLayout, addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, closeCurrentPane, focusDirection, restoreLayout, updatePaneCount, splitHorizontal, splitVertical } from './tab-pane-manager'
+import { fitAllPanes, initWindowResizeHandler } from './layout-render'
 import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './settings'
 import { loadProjects, addProject } from './project-manager'
+import { initDragDrop } from './drag-drop'
 
 // ── 侧边栏宽度拖拽 ──
 
@@ -115,9 +116,13 @@ window.terminalAPI.onMenuEvent('menu:close-tab', () => {
 })
 window.terminalAPI.onMenuEvent('menu:next-tab', () => switchToNextTab())
 window.terminalAPI.onMenuEvent('menu:prev-tab', () => switchToPrevTab())
-window.terminalAPI.onMenuEvent('menu:split-h', () => splitPane('horizontal'))
-window.terminalAPI.onMenuEvent('menu:split-v', () => splitPane('vertical'))
 window.terminalAPI.onMenuEvent('menu:close-pane', () => closeCurrentPane())
+window.terminalAPI.onMenuEvent('menu:split-horizontal', () => splitHorizontal())
+window.terminalAPI.onMenuEvent('menu:split-vertical', () => splitVertical())
+window.terminalAPI.onMenuEvent('menu:focus-left', () => focusDirection('left'))
+window.terminalAPI.onMenuEvent('menu:focus-right', () => focusDirection('right'))
+window.terminalAPI.onMenuEvent('menu:focus-up', () => focusDirection('up'))
+window.terminalAPI.onMenuEvent('menu:focus-down', () => focusDirection('down'))
 window.terminalAPI.onMenuEvent('menu:settings', () => openSettings())
 
 // ── 快捷键 ──
@@ -140,14 +145,6 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault()
     const index = parseInt(e.key) - 1
     if (index < tabs.length) switchTab(tabs[index])
-  }
-  if (e.altKey && e.shiftKey && e.key === '-') {
-    e.preventDefault()
-    splitPane('horizontal')
-  }
-  if (e.altKey && e.shiftKey && e.key === '=') {
-    e.preventDefault()
-    splitPane('vertical')
   }
   if (e.altKey && !e.shiftKey) {
     if (e.key === 'ArrowLeft') { e.preventDefault(); focusDirection('left') }
@@ -191,6 +188,8 @@ async function main(): Promise<void> {
       await addTab()
     }
 
+    initDragDrop()
+    initWindowResizeHandler()
     updatePaneCount()
     loading.classList.add('hidden')
   } catch (err) {

@@ -63,6 +63,11 @@ export function requestSaveLayout(): void {
 export const tabBar = document.getElementById('tab-bar')!
 export const tabAddBtn = document.getElementById('tab-add')!
 export const terminalContainer = document.getElementById('terminal-container')!
+export const terminalWorkspace = document.createElement('div')
+terminalWorkspace.id = 'terminal-workspace'
+terminalContainer.parentElement?.insertBefore(terminalWorkspace, terminalContainer)
+terminalWorkspace.appendChild(tabBar)
+terminalWorkspace.appendChild(terminalContainer)
 export const statusShell = document.getElementById('status-shell')!
 export const statusCwd = document.getElementById('status-cwd')!
 export const loading = document.getElementById('loading')!

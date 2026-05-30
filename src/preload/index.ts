@@ -11,7 +11,7 @@
  * - 使用白名单机制限制可访问的 IPC 通道
  */
 
-import { contextBridge, ipcRenderer } from 'electron'
+import { clipboard, contextBridge, ipcRenderer } from 'electron'
 
 /**
  * 向渲染进程暴露安全的终端 API
@@ -60,6 +60,15 @@ contextBridge.exposeInMainWorld('terminalAPI', {
     if (typeof id !== 'string' || id.length > 100) return
     if (typeof data !== 'string' || data.length > 100000) return
     ipcRenderer.send('pty:input', id, data)
+  },
+
+  writeClipboardText: (text: string): void => {
+    if (typeof text !== 'string' || text.length === 0) return
+    clipboard.writeText(text.slice(0, 1000000))
+  },
+
+  readClipboardText: (): string => {
+    return clipboard.readText()
   },
 
   /**
@@ -170,8 +179,6 @@ contextBridge.exposeInMainWorld('terminalAPI', {
       'menu:close-tab',
       'menu:next-tab',
       'menu:prev-tab',
-      'menu:split-h',
-      'menu:split-v',
       'menu:close-pane',
       'menu:settings'
     ]
@@ -248,7 +255,7 @@ contextBridge.exposeInMainWorld('terminalAPI', {
       title: string
       activePaneId: string
       layout: any
-      panes: Array<{ id: string; shell: string; cwd: string }>
+      panes: Array<{ id: string; shell: string; cwd: string; title?: string }>
     }>
     activeTabId: string
   } | null> => {
@@ -269,7 +276,7 @@ contextBridge.exposeInMainWorld('terminalAPI', {
       title: string
       activePaneId: string
       layout: any
-      panes: Array<{ id: string; shell: string; cwd: string }>
+      panes: Array<{ id: string; shell: string; cwd: string; title?: string }>
     }>
     activeTabId: string
   }): void => {
