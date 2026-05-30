@@ -1,0 +1,85 @@
+/**
+ * 应用菜单
+ */
+
+import { BrowserWindow, Menu, dialog } from 'electron'
+
+export function createMenu(mainWindow: BrowserWindow | null): void {
+  const send = (channel: string): void => {
+    mainWindow?.webContents.send(channel)
+  }
+
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: '文件(&F)',
+      submenu: [
+        { label: '新建标签', accelerator: 'CmdOrCtrl+T', click: () => send('menu:new-tab') },
+        { type: 'separator' },
+        { label: '关闭标签', accelerator: 'CmdOrCtrl+W', click: () => send('menu:close-tab') },
+        { type: 'separator' },
+        { label: '设置', accelerator: 'CmdOrCtrl+,', click: () => send('menu:settings') },
+        { type: 'separator' },
+        { role: 'quit', label: '退出' }
+      ]
+    },
+    {
+      label: '编辑(&E)',
+      submenu: [
+        { role: 'undo', label: '撤销' },
+        { role: 'redo', label: '重做' },
+        { type: 'separator' },
+        { role: 'cut', label: '剪切' },
+        { role: 'copy', label: '复制' },
+        { role: 'paste', label: '粘贴' },
+        { role: 'delete', label: '删除' },
+        { type: 'separator' },
+        { role: 'selectAll', label: '全选' }
+      ]
+    },
+    {
+      label: '视图(&V)',
+      submenu: [
+        { role: 'reload', label: '重新加载' },
+        { role: 'forceReload', label: '强制重新加载' },
+        { role: 'toggleDevTools', label: '开发者工具' },
+        { type: 'separator' },
+        { role: 'resetZoom', label: '实际大小' },
+        { role: 'zoomIn', label: '放大' },
+        { role: 'zoomOut', label: '缩小' },
+        { type: 'separator' },
+        { role: 'togglefullscreen', label: '全屏' }
+      ]
+    },
+    {
+      label: '终端(&T)',
+      submenu: [
+        { label: '新建终端', click: () => send('menu:new-tab') },
+        { type: 'separator' },
+        { label: '水平分屏', accelerator: 'Alt+Shift+-', click: () => send('menu:split-h') },
+        { label: '垂直分屏', accelerator: 'Alt+Shift+=', click: () => send('menu:split-v') },
+        { label: '关闭面板', accelerator: 'Alt+Shift+W', click: () => send('menu:close-pane') },
+        { type: 'separator' },
+        { label: '上一个标签', accelerator: 'CmdOrCtrl+Shift+Tab', click: () => send('menu:prev-tab') },
+        { label: '下一个标签', accelerator: 'CmdOrCtrl+Tab', click: () => send('menu:next-tab') }
+      ]
+    },
+    {
+      label: '帮助(&H)',
+      submenu: [
+        {
+          label: '关于终端管理器',
+          click: () => {
+            dialog.showMessageBox(mainWindow!, {
+              type: 'info',
+              title: '关于',
+              message: '终端管理器 v0.1.0',
+              detail: '一个基于 Electron 的跨平台多终端管理工具。'
+            })
+          }
+        }
+      ]
+    }
+  ]
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+}

@@ -1,0 +1,92 @@
+/**
+ * 渲染进程全局状态
+ */
+
+import type { Tab, Project, Config } from './types'
+
+// ── 全局状态 ──
+
+export const tabs: Tab[] = []
+export let activeTab: Tab | null = null
+export let tabIndex = 0
+export let paneCounter = 0
+export let projects: Project[] = []
+export let appConfig: Config = {
+  general: {
+    defaultShell: 'powershell.exe',
+    defaultCwd: '',
+    fontSize: 14,
+    theme: 'dark',
+    scrollback: 10000
+  }
+}
+export let sidebarWidth = 220
+
+export function setActiveTab(tab: Tab | null): void {
+  activeTab = tab
+}
+
+export function setAppConfig(config: Config): void {
+  appConfig = config
+}
+
+export function setProjects(p: Project[]): void {
+  projects = p
+}
+
+export function setSidebarWidth(w: number): void {
+  sidebarWidth = w
+}
+
+export function incrementTabIndex(): number {
+  return ++tabIndex
+}
+
+export function incrementPaneCounter(): number {
+  return ++paneCounter
+}
+
+// ── 布局保存回调（避免循环依赖）──
+
+let _saveFn: (() => void) | null = null
+
+export function registerSaveLayout(fn: () => void): void {
+  _saveFn = fn
+}
+
+export function requestSaveLayout(): void {
+  if (_saveFn) _saveFn()
+}
+
+// ── DOM 元素引用 ──
+
+export const tabBar = document.getElementById('tab-bar')!
+export const tabAddBtn = document.getElementById('tab-add')!
+export const terminalContainer = document.getElementById('terminal-container')!
+export const statusShell = document.getElementById('status-shell')!
+export const statusCwd = document.getElementById('status-cwd')!
+export const loading = document.getElementById('loading')!
+export const projectList = document.getElementById('project-list')!
+export const btnAddProject = document.getElementById('btn-add-project')!
+export const sidebar = document.getElementById('sidebar')!
+
+// 设置对话框 DOM
+export const settingsOverlay = document.getElementById('settings-overlay')!
+export const settingsClose = document.getElementById('settings-close')!
+export const settingsCancel = document.getElementById('settings-cancel')!
+export const settingsSave = document.getElementById('settings-save')!
+export const settingShell = document.getElementById('setting-shell') as HTMLInputElement
+export const settingCwd = document.getElementById('setting-cwd') as HTMLInputElement
+export const settingFontSize = document.getElementById('setting-font-size') as HTMLInputElement
+export const settingScrollback = document.getElementById('setting-scrollback') as HTMLInputElement
+export const settingTheme = document.getElementById('setting-theme') as HTMLSelectElement
+
+// 确认对话框 DOM
+export const confirmOverlay = document.getElementById('confirm-overlay')!
+export const confirmTitle = document.getElementById('confirm-title')!
+export const confirmBody = document.getElementById('confirm-body')!
+export const confirmOk = document.getElementById('confirm-ok')!
+export const confirmCancel = document.getElementById('confirm-cancel')!
+
+// 通知 DOM
+export const notification = document.getElementById('notification')!
