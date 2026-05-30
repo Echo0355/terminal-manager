@@ -66,21 +66,13 @@ function createSplitter(container: ContainerNode, index: number): HTMLElement {
   const isH = container.direction === 'horizontal'
   splitter.style.flexBasis = '4px'
   splitter.style.flexShrink = '0'
-  splitter.style.background = 'transparent'
   splitter.style.cursor = isH ? 'col-resize' : 'row-resize'
-  splitter.style.position = 'relative'
-  splitter.style.zIndex = '10'
-
-  splitter.addEventListener('mouseenter', () => {
-    splitter.style.background = '#007acc'
-  })
-  splitter.addEventListener('mouseleave', () => {
-    splitter.style.background = 'transparent'
-  })
 
   splitter.addEventListener('mousedown', (e) => {
     e.preventDefault()
-    startResize(e, container, index, isH)
+    splitter.classList.add('dragging')
+    document.body.style.cursor = isH ? 'col-resize' : 'row-resize'
+    startResize(e, container, index, isH, splitter)
   })
 
   return splitter
@@ -93,7 +85,8 @@ function startResize(
   e: MouseEvent,
   container: ContainerNode,
   leftIndex: number,
-  isHorizontal: boolean
+  isHorizontal: boolean,
+  splitter: HTMLElement
 ): void {
   const target = e.target as HTMLElement
   const parent = target.parentElement!
@@ -127,6 +120,8 @@ function startResize(
   const onMouseUp = (): void => {
     document.removeEventListener('mousemove', onMouseMove)
     document.removeEventListener('mouseup', onMouseUp)
+    splitter.classList.remove('dragging')
+    document.body.style.cursor = ''
     if (activeTab) fitAllPanes(activeTab)
     requestSaveLayout()
   }

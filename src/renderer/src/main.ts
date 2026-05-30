@@ -5,11 +5,16 @@
  * 具体业务逻辑分布在各子模块中。
  */
 
-import { tabs, activeTab, setSidebarWidth, loading, sidebar, settingsOverlay, settingsClose, settingsCancel, settingsSave, confirmOverlay, tabAddBtn, btnAddProject } from './state'
+import {
+  tabs, activeTab, appConfig, setAppConfig, sidebarWidth, setSidebarWidth, loading, sidebar,
+  settingsOverlay, settingsClose, settingsCancel, settingsSave, confirmOverlay,
+  tabAddBtn, btnAddProject, statusThemeToggle,
+  btnToggleSidebar, btnOpenSettings
+} from './state'
 import { handleConfirmCancel } from './ui-utils'
-import { scheduleSaveLayout, addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, splitPane, closeCurrentPane, focusDirection, restoreLayout } from './tab-pane-manager'
+import { scheduleSaveLayout, addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab, splitPane, closeCurrentPane, focusDirection, restoreLayout, updatePaneCount } from './tab-pane-manager'
 import { fitAllPanes } from './layout-render'
-import { loadConfig, openSettings, closeSettings, saveSettings } from './settings'
+import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './settings'
 import { loadProjects, addProject } from './project-manager'
 
 // ── 侧边栏宽度拖拽 ──
@@ -20,6 +25,7 @@ function initSidebarResize(): void {
   let startWidth = 0
 
   sidebar.addEventListener('mousedown', (e) => {
+    if (sidebar.classList.contains('collapsed')) return
     const rect = sidebar.getBoundingClientRect()
     if (e.clientX > rect.right - 4) {
       isResizing = true
@@ -55,6 +61,50 @@ settingsCancel.addEventListener('click', closeSettings)
 settingsSave.addEventListener('click', saveSettings)
 settingsOverlay.addEventListener('click', (e) => {
   if (e.target === settingsOverlay) closeSettings()
+})
+
+// 活动栏按钮 — 显示/隐藏侧边栏
+let pendingSidebarResize: (() => void) | null = null
+
+btnToggleSidebar.addEventListener('click', () => {
+  const isCollapsed = sidebar.classList.contains('collapsed')
+
+  // 清理上一次未完成的 transitionend 监听器
+  if (pendingSidebarResize) {
+    sidebar.removeEventListener('transitionend', pendingSidebarResize)
+    pendingSidebarResize = null
+  }
+
+  if (isCollapsed) {
+    sidebar.classList.remove('collapsed')
+    sidebar.style.width = `${sidebarWidth}px`
+    btnToggleSidebar.classList.add('active')
+  } else {
+    setSidebarWidth(sidebar.offsetWidth)
+    sidebar.classList.add('collapsed')
+    sidebar.style.width = ''
+    btnToggleSidebar.classList.remove('active')
+  }
+
+  // transition 结束后调整终端尺寸
+  pendingSidebarResize = (): void => {
+    pendingSidebarResize = null
+    if (activeTab) fitAllPanes(activeTab)
+  }
+  sidebar.addEventListener('transitionend', pendingSidebarResize, { once: true })
+})
+
+btnOpenSettings.addEventListener('click', () => openSettings())
+
+// 状态栏主题切换按钮
+statusThemeToggle.addEventListener('click', async () => {
+  const newTheme: 'dark' | 'light' = appConfig.general.theme === 'dark' ? 'light' : 'dark'
+  const newConfig = { ...appConfig, general: { ...appConfig.general, theme: newTheme } }
+  const result = await window.terminalAPI.saveConfig(newConfig)
+  if (result.success) {
+    setAppConfig(newConfig)
+    applyTheme(newTheme)
+  }
 })
 
 // ── 菜单事件 ──
@@ -131,6 +181,7 @@ window.addEventListener('resize', () => {
 async function main(): Promise<void> {
   try {
     await loadConfig()
+    applyTheme(appConfig.general.theme)
     await loadProjects()
     initSidebarResize()
 
@@ -140,10 +191,16 @@ async function main(): Promise<void> {
       await addTab()
     }
 
+    updatePaneCount()
     loading.classList.add('hidden')
   } catch (err) {
     console.error('初始化终端失败：', err)
-    loading.textContent = `错误：${err instanceof Error ? err.message : '未知错误'}`
+    const loadingText = loading.querySelector('.loading-text')
+    if (loadingText) {
+      loadingText.textContent = `错误：${err instanceof Error ? err.message : '未知错误'}`
+    }
+    const spinner = loading.querySelector('.loading-spinner')
+    if (spinner) (spinner as HTMLElement).style.display = 'none'
   }
 }
 

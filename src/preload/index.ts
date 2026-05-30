@@ -325,5 +325,16 @@ contextBridge.exposeInMainWorld('terminalAPI', {
    */
   listShells: (): Promise<Array<{ name: string; path: string; args?: string[] }>> => {
     return ipcRenderer.invoke('shell:list')
+  },
+
+  // ── 主题同步 ──
+
+  /**
+   * 同步主题到主进程（更新原生标题栏颜色）
+   *
+   * @param theme - 主题名称
+   */
+  setTheme: (theme: 'dark' | 'light'): void => {
+    ipcRenderer.send('theme:set', theme)
   }
 })

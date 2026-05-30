@@ -15,6 +15,16 @@ import {
 
 let notificationTimer: ReturnType<typeof setTimeout> | null = null
 
+const NOTIFICATION_ICONS: Record<string, string> = {
+  info: 'ℹ',
+  error: '✗',
+  warning: '⚠',
+  success: '✓'
+}
+
+/**
+ * 显示通知提示
+ */
 export function showNotification(
   message: string,
   type: 'info' | 'error' | 'warning' | 'success' = 'info',
@@ -25,7 +35,8 @@ export function showNotification(
     notificationTimer = null
   }
 
-  notification.textContent = message
+  const icon = NOTIFICATION_ICONS[type] || NOTIFICATION_ICONS.info
+  notification.innerHTML = `<span class="notification-icon">${icon}</span><span class="notification-text">${escapeHtml(message)}</span>`
   notification.className = type
   notification.classList.add('visible')
 
@@ -41,6 +52,9 @@ export function showNotification(
 
 let confirmResolve: ((value: boolean) => void) | null = null
 
+/**
+ * 显示确认对话框
+ */
 export function showConfirm(title: string, message: string): Promise<boolean> {
   return new Promise((resolve) => {
     confirmTitle.textContent = title
@@ -75,6 +89,9 @@ confirmOverlay.addEventListener('click', (e) => {
 
 // ── 工具函数 ──
 
+/**
+ * HTML 转义
+ */
 export function escapeHtml(text: string): string {
   const div = document.createElement('div')
   div.textContent = text

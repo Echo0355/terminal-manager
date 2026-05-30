@@ -67,12 +67,12 @@ export function createMenu(mainWindow: BrowserWindow | null): void {
       label: '帮助(&H)',
       submenu: [
         {
-          label: '关于终端管理器',
+          label: '关于 Terminal Manager',
           click: () => {
             dialog.showMessageBox(mainWindow!, {
               type: 'info',
               title: '关于',
-              message: '终端管理器 v0.1.0',
+              message: 'Terminal Manager v0.1.0',
               detail: '一个基于 Electron 的跨平台多终端管理工具。'
             })
           }

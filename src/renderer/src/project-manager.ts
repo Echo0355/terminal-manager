@@ -19,7 +19,7 @@ export function renderProjectList(): void {
   if (projects.length === 0) {
     const empty = document.createElement('div')
     empty.id = 'sidebar-empty'
-    empty.textContent = '暂无项目，点击上方 ＋ 添加'
+    empty.innerHTML = '<span>暂无项目</span><span style="font-size:11px;opacity:0.7">点击上方 + 添加</span>'
     projectList.appendChild(empty)
     return
   }

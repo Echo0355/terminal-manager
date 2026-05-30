@@ -12,7 +12,7 @@ import { THEMES } from './types'
 import {
   tabs, activeTab, setActiveTab, incrementTabIndex, incrementPaneCounter, appConfig,
   sidebarWidth, setSidebarWidth, registerSaveLayout,
-  tabBar, tabAddBtn, terminalContainer, statusShell, statusCwd, sidebar
+  tabBar, tabAddBtn, terminalContainer, statusShell, statusCwd, statusPanes, sidebar
 } from './state'
 import { showNotification, showConfirm, escapeHtml } from './ui-utils'
 import {
@@ -36,6 +36,15 @@ export function scheduleSaveLayout(): void {
 // 注册保存回调，供 layout-render 调用（避免循环依赖）
 registerSaveLayout(scheduleSaveLayout)
 
+/**
+ * 更新状态栏面板计数
+ */
+export function updatePaneCount(): void {
+  if (!activeTab) return
+  const count = activeTab.panes.size
+  statusPanes.textContent = count > 1 ? `${count} 个面板` : ''
+}
+
 // ── 焦点管理 ──
 
 export function focusPane(tab: Tab, paneId: string): void {
@@ -50,8 +59,10 @@ export function focusPane(tab: Tab, paneId: string): void {
   }
 
   if (pane) {
-    statusShell.textContent = pane.shell || appConfig.general.defaultShell || 'PowerShell'
-    statusCwd.textContent = pane.cwd || appConfig.general.defaultCwd || '~'
+    const shellText = statusShell.querySelector('span:last-child')
+    const cwdText = statusCwd.querySelector('span:last-child')
+    if (shellText) shellText.textContent = pane.shell || appConfig.general.defaultShell || 'PowerShell'
+    if (cwdText) cwdText.textContent = pane.cwd || appConfig.general.defaultCwd || '~'
   }
 }
 
@@ -179,6 +190,7 @@ export async function splitPane(direction: 'horizontal' | 'vertical'): Promise<v
 
   renderLayout(tab)
   focusPane(tab, newPane.id)
+  updatePaneCount()
   scheduleSaveLayout()
 }
 
@@ -212,6 +224,7 @@ export async function closePane(tab: Tab, paneId: string): Promise<void> {
 
   simplifyLayout(tab)
   renderLayout(tab)
+  updatePaneCount()
   scheduleSaveLayout()
 }
 
@@ -278,7 +291,7 @@ export async function restoreLayout(): Promise<boolean> {
   }
 
   if (state.windowState) {
-    setSidebarWidth(state.windowState.sidebarWidth || 220)
+    setSidebarWidth(state.windowState.sidebarWidth || 260)
     sidebar.style.width = `${sidebarWidth}px`
   }
 
@@ -442,10 +455,13 @@ export function switchTab(tab: Tab): void {
   const focused = tab.panes.get(tab.focusedPaneId)
   if (focused) {
     focused.terminal.focus()
-    statusShell.textContent = focused.shell || appConfig.general.defaultShell || 'PowerShell'
-    statusCwd.textContent = focused.cwd || appConfig.general.defaultCwd || '~'
+    const shellText = statusShell.querySelector('span:last-child')
+    const cwdText = statusCwd.querySelector('span:last-child')
+    if (shellText) shellText.textContent = focused.shell || appConfig.general.defaultShell || 'PowerShell'
+    if (cwdText) cwdText.textContent = focused.cwd || appConfig.general.defaultCwd || '~'
   }
 
+  updatePaneCount()
   scheduleSaveLayout()
 }
 

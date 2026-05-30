@@ -20,7 +20,7 @@ export let appConfig: Config = {
     scrollback: 10000
   }
 }
-export let sidebarWidth = 220
+export let sidebarWidth = 260
 
 export function setActiveTab(tab: Tab | null): void {
   activeTab = tab
@@ -79,7 +79,12 @@ export const settingShell = document.getElementById('setting-shell') as HTMLInpu
 export const settingCwd = document.getElementById('setting-cwd') as HTMLInputElement
 export const settingFontSize = document.getElementById('setting-font-size') as HTMLInputElement
 export const settingScrollback = document.getElementById('setting-scrollback') as HTMLInputElement
-export const settingTheme = document.getElementById('setting-theme') as HTMLSelectElement
+export const statusThemeToggle = document.getElementById('status-theme-toggle')!
+export const statusPanes = document.getElementById('status-panes')!
+
+// 活动栏 DOM
+export const btnToggleSidebar = document.getElementById('btn-toggle-sidebar')!
+export const btnOpenSettings = document.getElementById('btn-open-settings')!
 
 // 确认对话框 DOM
 export const confirmOverlay = document.getElementById('confirm-overlay')!

@@ -2,7 +2,7 @@
  * PTY 会话管理和 IPC 处理
  */
 
-import { BrowserWindow, ipcMain, dialog } from 'electron'
+import { BrowserWindow, ipcMain, dialog, nativeTheme } from 'electron'
 import { existsSync, statSync, accessSync, constants } from 'fs'
 import { basename } from 'path'
 import * as pty from 'node-pty'
@@ -35,6 +35,8 @@ export function init(shells: ShellInfo[], getMainWindow: () => BrowserWindow | n
   appConfig = loadConfig()
   shellValidator = createShellValidator(shells, () => appConfig.general.defaultShell)
   mainWindow = getMainWindow()
+  // 启动时同步主题到原生标题栏
+  nativeTheme.themeSource = appConfig.general.theme === 'light' ? 'light' : 'dark'
   setupIpcHandlers()
 }
 
@@ -259,4 +261,9 @@ function setupIpcHandlers(): void {
 
   // Shell 列表
   ipcMain.handle('shell:list', () => detectedShells)
+
+  // 主题同步（更新原生标题栏颜色）
+  ipcMain.on('theme:set', (_event, theme: string) => {
+    nativeTheme.themeSource = theme === 'light' ? 'light' : 'dark'
+  })
 }

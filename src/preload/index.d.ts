@@ -293,6 +293,13 @@ export interface TerminalAPI {
    * @returns Promise 包含 Shell 信息数组
    */
   listShells: () => Promise<ShellInfo[]>
+
+  /**
+   * 同步主题到主进程（更新原生标题栏颜色）
+   *
+   * @param theme - 主题名称
+   */
+  setTheme: (theme: 'dark' | 'light') => void
 }
 
 /**
