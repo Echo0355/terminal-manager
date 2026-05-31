@@ -1,64 +1,71 @@
-﻿# 文档目录
+# Documentation
 
-本文档是开发、规划和 AI 编码文档的入口。
+This is the entry point for development, planning, and AI coding documentation.
 
-面向普通用户的文档放在项目根目录：
+## User Documentation
 
-- [项目说明](../README.md)
-- [用户指南](../USER_GUIDE.md)
-- [已知限制](../KNOWN_LIMITATIONS.md)
+User-facing documentation is located in the `docs/` directory:
 
-面向 AI 编码代理的仓库指引也放在项目根目录：
+- [User Guide](./USER_GUIDE.md) | [用户指南](./USER_GUIDE_CN.md)
+- [Known Limitations](./KNOWN_LIMITATIONS.md)
 
-- [Claude Code 指引](../CLAUDE.md)
+Project overview and main README:
 
-## 产品和范围
+- [README (English)](../README.md)
+- [README (中文)](../README_CN.md)
 
-- [可行性分析](./product/feasibility-analysis.md)
-- [MVP 规格](./product/mvp-spec.md)
+## AI Coding Guide
 
-## 架构设计
+Repository guide for AI coding agents is in the project root:
 
-- [长期技术设计](./architecture/design.md)
+- [Claude Code Guide](../CLAUDE.md)
 
-## 开发路线
+## Product & Scope
 
-- [MVP 分阶段实施计划](./roadmap/implementation-plan.md)
-- [Post-MVP 路线图](./roadmap/post-mvp-roadmap.md)
+- [Feasibility Analysis](./product/feasibility-analysis.md)
+- [MVP Specification](./product/mvp-spec.md)
 
-## MVP 阶段文档
+## Architecture
 
-- [阶段 1：初始化项目框架](./roadmap/phases/phase-01-scaffold.md)
-- [阶段 2：单终端核心闭环](./roadmap/phases/phase-02-terminal-core.md)
-- [阶段 3：多标签](./roadmap/phases/phase-03-tabs.md)
-- [阶段 4：基础分屏和 Pane 布局](./roadmap/phases/phase-04-pane-layout.md)
-- [阶段 5：项目目录管理](./roadmap/phases/phase-05-project-manager.md)
-- [阶段 6：布局持久化和重建](./roadmap/phases/phase-06-layout-persistence.md)
-- [阶段 7：基础设置](./roadmap/phases/phase-07-settings.md)
-- [阶段 8：安全和错误兜底](./roadmap/phases/phase-08-safety-error-handling.md)
-- [阶段 9：MVP 测试](./roadmap/phases/phase-09-tests.md)
-- [阶段 10：打包验证](./roadmap/phases/phase-10-packaging.md)
-- [阶段 11：MVP 体验打磨](./roadmap/phases/phase-11-ux-polish.md)
-- [阶段 12：发布前验收和用户文档](./roadmap/phases/phase-12-release-readiness.md)
+- [Long-term Technical Design](./architecture/design.md)
 
-## 后续版本
+## Development Roadmap
 
-- [v1.0 核心体验增强](./roadmap/versions/v1-core-experience.md)
-- [v1.5 工作区能力](./roadmap/versions/v1-5-workspace.md)
-- [v2.0 高级能力](./roadmap/versions/v2-advanced.md)
+- [MVP Phased Implementation Plan](./roadmap/implementation-plan.md)
+- [Post-MVP Roadmap](./roadmap/post-mvp-roadmap.md)
 
-## 推荐阅读顺序
+## MVP Phase Documents
 
-如果是让 AI 写代码，按这个顺序读：
+- [Phase 1: Project Scaffold](./roadmap/phases/phase-01-scaffold.md)
+- [Phase 2: Single Terminal Core](./roadmap/phases/phase-02-terminal-core.md)
+- [Phase 3: Multi-tab](./roadmap/phases/phase-03-tabs.md)
+- [Phase 4: Basic Split and Pane Layout](./roadmap/phases/phase-04-pane-layout.md)
+- [Phase 5: Project Directory Management](./roadmap/phases/phase-05-project-manager.md)
+- [Phase 6: Layout Persistence and Restoration](./roadmap/phases/phase-06-layout-persistence.md)
+- [Phase 7: Basic Settings](./roadmap/phases/phase-07-settings.md)
+- [Phase 8: Safety and Error Handling](./roadmap/phases/phase-08-safety-error-handling.md)
+- [Phase 9: MVP Testing](./roadmap/phases/phase-09-tests.md)
+- [Phase 10: Packaging](./roadmap/phases/phase-10-packaging.md)
+- [Phase 11: MVP UX Polish](./roadmap/phases/phase-11-ux-polish.md)
+- [Phase 12: Release Readiness](./roadmap/phases/phase-12-release-readiness.md)
 
-1. [MVP 规格](./product/mvp-spec.md)
-2. [MVP 分阶段实施计划](./roadmap/implementation-plan.md)
-3. 当前阶段文档
-4. 必要时参考 [长期技术设计](./architecture/design.md)
+## Future Versions
 
-如果是判断项目是否值得做，读：
+- [v1.0 Core Experience Enhancement](./roadmap/versions/v1-core-experience.md)
+- [v1.5 Workspace Capabilities](./roadmap/versions/v1-5-workspace.md)
+- [v2.0 Advanced Features](./roadmap/versions/v2-advanced.md)
 
-1. [可行性分析](./product/feasibility-analysis.md)
-2. [MVP 规格](./product/mvp-spec.md)
-3. [Post-MVP 路线图](./roadmap/post-mvp-roadmap.md)
+## Recommended Reading Order
 
+For AI code generation:
+
+1. [MVP Specification](./product/mvp-spec.md)
+2. [MVP Phased Implementation Plan](./roadmap/implementation-plan.md)
+3. Current phase document
+4. Reference [Long-term Technical Design](./architecture/design.md) as needed
+
+For project evaluation:
+
+1. [Feasibility Analysis](./product/feasibility-analysis.md)
+2. [MVP Specification](./product/mvp-spec.md)
+3. [Post-MVP Roadmap](./roadmap/post-mvp-roadmap.md)
