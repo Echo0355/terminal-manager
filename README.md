@@ -10,7 +10,9 @@ English | **[中文](./README_CN.md)**
 
 - [User Guide](./docs/USER_GUIDE.md) | [用户指南](./docs/USER_GUIDE_CN.md)
 - [Known Limitations](./docs/KNOWN_LIMITATIONS.md)
-- [Development & AI Documentation](./docs/README.md)
+- [Changelog](./docs/CHANGELOG.md)
+- [Contributing](./docs/CONTRIBUTING.md)
+- [All Documentation](./docs/README.md)
 
 ## Features
 
@@ -154,7 +156,7 @@ A: Please check:
 
 ## Contributing
 
-Contributions are welcome! Please check the [Contributing Guide](CLAUDE.md#contributing) for how to participate in the project.
+Contributions are welcome! Please check the [Contributing Guide](./docs/CONTRIBUTING.md) for how to participate in the project.
 
 ### Quick Start
 

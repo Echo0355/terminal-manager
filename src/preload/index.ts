@@ -180,6 +180,12 @@ contextBridge.exposeInMainWorld('terminalAPI', {
       'menu:next-tab',
       'menu:prev-tab',
       'menu:close-pane',
+      'menu:split-horizontal',
+      'menu:split-vertical',
+      'menu:focus-left',
+      'menu:focus-right',
+      'menu:focus-up',
+      'menu:focus-down',
       'menu:settings'
     ]
     if (!validChannels.includes(channel)) return () => {}
@@ -188,6 +194,36 @@ contextBridge.exposeInMainWorld('terminalAPI', {
     return () => {
       ipcRenderer.removeListener(channel, listener)
     }
+  },
+
+  // ── 应用生命周期 ──
+
+  /**
+   * 监听应用关闭确认请求
+   *
+   * 当用户尝试关闭窗口时，主进程会发送此事件请求渲染进程显示确认对话框。
+   *
+   * @param callback - 接收确认请求的回调函数
+   * @returns 清理函数
+   */
+  onCloseConfirmRequest: (callback: () => void): (() => void) => {
+    if (typeof callback !== 'function') return () => {}
+    const listener = (): void => callback()
+    ipcRenderer.on('app:request-close-confirm', listener)
+    return () => {
+      ipcRenderer.removeListener('app:request-close-confirm', listener)
+    }
+  },
+
+  /**
+   * 发送关闭确认结果
+   *
+   * 将用户的选择结果返回给主进程。
+   *
+   * @param confirmed - 用户是否确认关闭
+   */
+  sendCloseConfirmResult: (confirmed: boolean): void => {
+    ipcRenderer.send('app:close-confirm-result', confirmed)
   },
 
   // ── 项目管理 ──

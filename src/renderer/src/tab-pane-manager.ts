@@ -39,7 +39,7 @@ import {
   tabs,
   terminalContainer
 } from './state'
-import { THEMES, type LayoutNode, type LayoutState, type LayoutStateNode, type Pane, type PaneState, type Tab, type TabState } from './types'
+import { THEMES, type LayoutNode, type LayoutStateNode, type Pane, type Tab, type TabState } from './types'
 import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from './tab-chrome'
 import { showConfirm, showNotification } from './ui-utils'
 
@@ -389,7 +389,10 @@ export async function closePane(tab: Tab, paneId: string): Promise<void> {
     }
   }
 
-  removeFromLayout(tab.layout, paneId)
+  const removed = removeFromLayout(tab.layout, paneId)
+  if (!removed) {
+    console.warn('closePane: removeFromLayout 未找到面板', paneId)
+  }
 
   const pane = tab.panes.get(paneId)
   if (pane) {
@@ -397,7 +400,9 @@ export async function closePane(tab: Tab, paneId: string): Promise<void> {
     tab.panes.delete(paneId)
   }
 
-  simplifyLayout(tab)
+  if (removed) {
+    simplifyLayout(tab)
+  }
   renderLayout(tab)
 
   const focusedPane = tab.panes.get(tab.focusedPaneId)
@@ -450,7 +455,11 @@ export async function splitPane(direction: 'horizontal' | 'vertical'): Promise<v
     ])
   } else {
     // 在聚焦面板的指定方向插入新面板
-    insertAtPosition(activeTab.layout, focusedPaneId, makeLeaf(pane.id), position)
+    const inserted = insertAtPosition(activeTab.layout, focusedPaneId, makeLeaf(pane.id), position)
+    if (!inserted) {
+      console.warn('splitPane: insertAtPosition 未找到聚焦面板', focusedPaneId, '降级为追加')
+      activeTab.layout = makeContainer(direction, [activeTab.layout, makeLeaf(pane.id)])
+    }
   }
 
   // 添加面板到 Tab
@@ -486,51 +495,6 @@ export function focusDirection(direction: 'left' | 'right' | 'up' | 'down'): voi
   const adjacent = findAdjacentPane(activeTab.layout, activeTab.focusedPaneId, direction)
   if (adjacent) {
     focusPane(activeTab, adjacent)
-  }
-}
-
-function serializeLayoutNode(node: LayoutNode): LayoutStateNode {
-  if (isLeaf(node)) {
-    return { type: 'leaf', paneId: node.paneId }
-  }
-
-  return {
-    type: 'container',
-    direction: node.direction,
-    sizes: [...node.sizes],
-    children: node.children.map(serializeLayoutNode)
-  }
-}
-
-function serializeCurrentState(): LayoutState {
-  const tabStates: TabState[] = tabs.map((tab) => {
-    const panes: PaneState[] = []
-
-    for (const pane of tab.panes.values()) {
-      panes.push({
-        id: pane.id,
-        shell: pane.shell || appConfig.general.defaultShell,
-        cwd: pane.cwd || '~',
-        title: getPaneDisplayTitle(pane, tab.title)
-      })
-    }
-
-    return {
-      id: tab.id,
-      title: tab.title,
-      activePaneId: tab.focusedPaneId,
-      layout: serializeLayoutNode(tab.layout),
-      panes
-    }
-  })
-
-  return {
-    version: '0.1.0',
-    tabs: tabStates,
-    activeTabId: activeTab?.id || '',
-    windowState: {
-      sidebarWidth
-    }
   }
 }
 
@@ -718,7 +682,10 @@ export async function movePaneToTab(
     pane.title = getPaneDisplayTitle(pane, sourceTab.title)
     pane.element.remove()
 
-    removeFromLayout(sourceTab.layout, paneId)
+    const removed = removeFromLayout(sourceTab.layout, paneId)
+    if (!removed) {
+      console.warn('movePaneToTab(同标签): removeFromLayout 未找到面板', paneId)
+    }
     simplifyLayout(sourceTab)
 
     if (isLeaf(sourceTab.layout)) {
@@ -729,7 +696,14 @@ export async function movePaneToTab(
         position === 'left' || position === 'top' ? makeLeaf(existingPaneId) : makeLeaf(paneId)
       ])
     } else {
-      insertAtPosition(sourceTab.layout, targetPaneId, makeLeaf(paneId), position)
+      const inserted = insertAtPosition(sourceTab.layout, targetPaneId, makeLeaf(paneId), position)
+      if (!inserted) {
+        console.warn('movePaneToTab(同标签): insertAtPosition 未找到目标', targetPaneId, '降级为追加')
+        sourceTab.layout = makeContainer(
+          position === 'left' || position === 'right' ? 'horizontal' : 'vertical',
+          [sourceTab.layout, makeLeaf(paneId)]
+        )
+      }
     }
 
     renderLayout(sourceTab)
@@ -744,9 +718,19 @@ export async function movePaneToTab(
   pane.title = getPaneDisplayTitle(pane, sourceTab.title)
   pane.element.remove()
 
-  removeFromLayout(sourceTab.layout, paneId)
+  // 先从布局树中移除，再从 Map 中删除，确保两者始终一致
+  // 根节点叶子的情况：removeFromLayout 无法处理，但该 pane 是最后一个，由 closeTabSilent 清理
+  const isRootLeaf = isLeaf(sourceTab.layout) && sourceTab.layout.paneId === paneId
+  if (!isRootLeaf) {
+    const removed = removeFromLayout(sourceTab.layout, paneId)
+    if (!removed) {
+      // 布局树中找不到该 paneId（状态已不一致），跳过后续清理避免恶化
+      console.warn('movePaneToTab: removeFromLayout 未找到面板', paneId)
+    }
+    simplifyLayout(sourceTab)
+  }
+
   sourceTab.panes.delete(paneId)
-  simplifyLayout(sourceTab)
 
   if (sourceTab.panes.size === 0) {
     await closeTabSilent(sourceTab)
@@ -781,7 +765,15 @@ export async function movePaneToTab(
   } else if (position === 'center') {
     targetTab.layout = makeContainer('vertical', [targetTab.layout, makeLeaf(paneId)])
   } else {
-    insertAtPosition(targetTab.layout, targetPaneId, makeLeaf(paneId), position)
+    const inserted = insertAtPosition(targetTab.layout, targetPaneId, makeLeaf(paneId), position)
+    if (!inserted) {
+      // 目标 paneId 在布局树中未找到，降级为追加到根容器
+      console.warn('movePaneToTab: insertAtPosition 未找到目标', targetPaneId, '降级为追加')
+      targetTab.layout = makeContainer(
+        position === 'left' || position === 'right' ? 'horizontal' : 'vertical',
+        [targetTab.layout, makeLeaf(paneId)]
+      )
+    }
   }
 
   renderLayout(targetTab)
@@ -798,9 +790,14 @@ export async function movePaneToNewTab(sourceTab: Tab, paneId: string, beforeTab
 
   pane.element.remove()
 
-  removeFromLayout(sourceTab.layout, paneId)
+  const removed = removeFromLayout(sourceTab.layout, paneId)
+  if (!removed) {
+    console.warn('movePaneToNewTab: removeFromLayout 未找到面板', paneId)
+  }
   sourceTab.panes.delete(paneId)
-  simplifyLayout(sourceTab)
+  if (removed) {
+    simplifyLayout(sourceTab)
+  }
 
   if (sourceTab.focusedPaneId === paneId) {
     const leafIds = collectLeafIds(sourceTab.layout)

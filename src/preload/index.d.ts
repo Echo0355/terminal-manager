@@ -232,6 +232,27 @@ export interface TerminalAPI {
    */
   onMenuEvent: (channel: string, callback: () => void) => () => void
 
+  // ── 应用生命周期 ──
+
+  /**
+   * 监听应用关闭确认请求
+   *
+   * 当用户尝试关闭窗口时，主进程会发送此事件请求渲染进程显示确认对话框。
+   *
+   * @param callback - 接收确认请求的回调函数
+   * @returns 清理函数
+   */
+  onCloseConfirmRequest: (callback: () => void) => () => void
+
+  /**
+   * 发送关闭确认结果
+   *
+   * 将用户的选择结果返回给主进程。
+   *
+   * @param confirmed - 用户是否确认关闭
+   */
+  sendCloseConfirmResult: (confirmed: boolean) => void
+
   // ── 项目管理 ──
 
   /**

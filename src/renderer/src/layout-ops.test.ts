@@ -25,7 +25,6 @@ import {
   simplifyLayout,
   findAdjacentPane,
   insertAtPosition,
-  type LayoutNode,
   type ContainerNode,
   type LeafNode
 } from './layout-ops'
@@ -280,7 +279,7 @@ describe('simplifyLayout', () => {
     }
     simplifyLayout(tab as any)
     expect(isLeaf(tab.layout)).toBe(true)
-    expect((tab.layout as LeafNode).paneId).toBe('A')
+    expect((tab.layout as unknown as LeafNode).paneId).toBe('A')
   })
 
   it('根容器有多个子节点时不变', () => {
@@ -377,7 +376,8 @@ describe('insertAtPosition', () => {
   it('方向匹配时在右侧插入', () => {
     // 水平 [A | B]，在 B 右侧插入 C → [A | B | C]
     const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    insertAtPosition(tree, 'B', makeLeaf('C'), 'right')
+    const result = insertAtPosition(tree, 'B', makeLeaf('C'), 'right')
+    expect(result).toBe(true)
     expect(tree.children).toHaveLength(3)
     expect(collectLeafIds(tree)).toEqual(['A', 'B', 'C'])
   })
@@ -385,7 +385,8 @@ describe('insertAtPosition', () => {
   it('方向匹配时在左侧插入', () => {
     // 水平 [A | B]，在 A 左侧插入 C → [C | A | B]
     const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    insertAtPosition(tree, 'A', makeLeaf('C'), 'left')
+    const result = insertAtPosition(tree, 'A', makeLeaf('C'), 'left')
+    expect(result).toBe(true)
     expect(tree.children).toHaveLength(3)
     expect(collectLeafIds(tree)).toEqual(['C', 'A', 'B'])
   })
@@ -393,7 +394,8 @@ describe('insertAtPosition', () => {
   it('方向匹配时在上方插入（垂直容器）', () => {
     // 垂直 [A / B]，在 B 上方插入 C → [A / C / B]
     const tree = makeContainer('vertical', [makeLeaf('A'), makeLeaf('B')])
-    insertAtPosition(tree, 'B', makeLeaf('C'), 'top')
+    const result = insertAtPosition(tree, 'B', makeLeaf('C'), 'top')
+    expect(result).toBe(true)
     expect(tree.children).toHaveLength(3)
     expect(collectLeafIds(tree)).toEqual(['A', 'C', 'B'])
   })
@@ -401,7 +403,8 @@ describe('insertAtPosition', () => {
   it('方向匹配时在下方插入（垂直容器）', () => {
     // 垂直 [A / B]，在 A 下方插入 C → [A / C / B]
     const tree = makeContainer('vertical', [makeLeaf('A'), makeLeaf('B')])
-    insertAtPosition(tree, 'A', makeLeaf('C'), 'bottom')
+    const result = insertAtPosition(tree, 'A', makeLeaf('C'), 'bottom')
+    expect(result).toBe(true)
     expect(tree.children).toHaveLength(3)
     expect(collectLeafIds(tree)).toEqual(['A', 'C', 'B'])
   })
@@ -410,7 +413,8 @@ describe('insertAtPosition', () => {
     // 水平 [A | B]，在 A 下方插入 C（垂直方向不匹配水平容器）
     // → 水平 [ 垂直[C, A] | B ]
     const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
-    insertAtPosition(tree, 'A', makeLeaf('C'), 'bottom')
+    const result = insertAtPosition(tree, 'A', makeLeaf('C'), 'bottom')
+    expect(result).toBe(true)
     expect(tree.children).toHaveLength(2)
     // A 的位置被替换为嵌套容器
     expect(isContainer(tree.children[0])).toBe(true)
@@ -423,7 +427,8 @@ describe('insertAtPosition', () => {
     // 垂直 [A / B]，在 A 右侧插入 C（水平方向不匹配垂直容器）
     // → 垂直 [ 水平[A, C] / B ]
     const tree = makeContainer('vertical', [makeLeaf('A'), makeLeaf('B')])
-    insertAtPosition(tree, 'A', makeLeaf('C'), 'right')
+    const result = insertAtPosition(tree, 'A', makeLeaf('C'), 'right')
+    expect(result).toBe(true)
     expect(isContainer(tree.children[0])).toBe(true)
     const nested = tree.children[0] as ContainerNode
     expect(nested.direction).toBe('horizontal')
@@ -437,10 +442,11 @@ describe('insertAtPosition', () => {
     expect(Math.abs(total - 100)).toBeLessThan(0.01)
   })
 
-  it('目标不存在时无操作', () => {
+  it('目标不存在时返回 false 且不修改树', () => {
     const tree = makeContainer('horizontal', [makeLeaf('A'), makeLeaf('B')])
     const originalChildren = tree.children.length
-    insertAtPosition(tree, 'X', makeLeaf('C'), 'right')
+    const result = insertAtPosition(tree, 'X', makeLeaf('C'), 'right')
+    expect(result).toBe(false)
     expect(tree.children).toHaveLength(originalChildren)
   })
 
@@ -451,7 +457,8 @@ describe('insertAtPosition', () => {
       makeContainer('vertical', [makeLeaf('A'), makeLeaf('B')]),
       makeLeaf('C')
     ])
-    insertAtPosition(tree, 'B', makeLeaf('D'), 'right')
+    const result = insertAtPosition(tree, 'B', makeLeaf('D'), 'right')
+    expect(result).toBe(true)
     // B 在垂直容器中，right 方向是水平，与垂直不匹配
     // 所以 B 的位置被替换为 水平[B, D]
     const verticalContainer = tree.children[0] as ContainerNode

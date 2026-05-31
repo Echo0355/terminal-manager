@@ -12,6 +12,9 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
   - '!{vitest.config.ts,*.test.ts}'
   - '!{package-lock.json,yarn.lock,pnpm-lock.yaml}'
+extraResources:
+  - from: build/icon.ico
+    to: favicon.ico
 asarUnpack:
   - '**/*.node'
   - 'node_modules/node-pty/**/*'

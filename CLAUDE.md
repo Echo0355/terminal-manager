@@ -6,7 +6,7 @@
 
 ## 项目简介
 
-终端管理器 — 基于 Electron 的跨平台多终端管理工具，支持标签页/分屏布局管理和项目目录快速切换。界面和文档为中文，代码为英文。
+Terminal Manager — 基于 Electron 的跨平台多终端管理工具，支持标签页/分屏布局管理和项目目录快速切换。界面和文档为中文，代码为英文。
 
 ## 许可证
 
@@ -109,74 +109,6 @@
 - `electron-vite` — 基于 Vite 的 Electron 三进程构建工具
 - `electron-builder` — 打包工具（Windows NSIS 安装程序）
 
----
-
 ## 贡献指南
 
-欢迎贡献！以下是参与项目的方式。
-
-### 报告问题
-
-1. 在 Issues 页面搜索是否已有相同问题
-2. 如果没有，创建新 Issue 并包含：
-   - 清晰的问题标题和描述
-   - 复现步骤
-   - 预期行为与实际行为
-   - 系统信息（操作系统、Node.js 版本、npm 版本）
-   - 相关日志或截图
-
-### 提交 Pull Request
-
-1. Fork 本仓库
-2. 创建功能分支：`git checkout -b feature/your-feature-name`
-3. 提交更改：`git commit -m 'feat: 添加某功能'`
-4. 推送分支：`git push origin feature/your-feature-name`
-5. 创建 Pull Request
-
-### 提交规范
-
-使用 Conventional Commits 规范：
-
-- `feat:` 新功能
-- `fix:` 修复 bug
-- `docs:` 文档更新
-- `style:` 代码格式调整（不影响功能）
-- `refactor:` 重构
-- `test:` 测试相关
-- `chore:` 构建/工具链更新
-
-### 开发环境设置
-
-```bash
-# 克隆仓库
-git clone https://github.com/Echo0355/terminal-manager.git
-cd terminal-manager
-
-# 安装依赖
-npm install
-
-# 启动开发模式
-npm run dev
-
-# 运行测试
-npm run test
-
-# 类型检查
-npm run typecheck
-```
-
-### 代码审查
-
-- 所有 PR 需要通过 CI 检查
-- 共享模块（`src/shared/`）的更改必须包含测试
-- 保持代码注释为中文
-- 遵循现有代码风格
-
-### 行为准则
-
-参与本项目即表示您同意遵守以下准则：
-
-- 尊重所有参与者
-- 接受建设性批评
-- 专注于对社区最有利的事情
-- 对他人表示同理心
+详见 [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)。

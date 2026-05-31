@@ -1,4 +1,4 @@
-# 终端管理器用户指南
+# Terminal Manager 用户指南
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -149,7 +149,7 @@
 
 ## 拖拽操作
 
-终端管理器支持 VS Code 风格的拖拽操作。
+Terminal Manager 支持 VS Code 风格的拖拽操作。
 
 ### 拖拽面板
 

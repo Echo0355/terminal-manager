@@ -13,27 +13,82 @@ let closeListenersBound = false
 let focusListenersBound = false
 
 /**
- * IME（输入法）活动状态标志
+ * IME 组合期间的滚动锁定
  *
- * 当用户使用中文、日文等输入法时，此标志为 true。
- * 在 IME 输入期间，应暂停 fitAllPanes 等自动调整操作，
- * 避免输入法候选窗口触发的 resize 事件导致终端内容被挤压。
+ * xterm.js 的 CompositionHelper.updateCompositionElements() 在每次
+ * compositionupdate 时将 textarea 从 left:-9999em 移到光标位置，
+ * 导致浏览器自动滚动以显示获得焦点的 textarea。
+ *
+ * 需要锁定两层：
+ * 1. .xterm-viewport — 终端内容滚动
+ * 2. #terminal-container — 整个终端面板的位置（浏览器可能选择滚动父容器）
+ *
+ * 方案：compositionstart 时记录 scrollTop 并添加 scroll 监听器，
+ * 用 requestAnimationFrame 在浏览器自动滚动后立即恢复原位。
+ * compositionend 时解除锁定。
  */
-let isIMEActive = false
+let isIMEComposing = false
+let imeScrollHandler: (() => void) | null = null
+/** compositionstart 时捕获的需要锁定的元素引用 */
+let imeLockedElements: HTMLElement[] | null = null
 
 /**
- * 初始化 IME 状态检测
- *
- * 监听全局的 compositionstart 和 compositionend 事件，
- * 跟踪输入法的活动状态。在 IME 活动期间，fitAllPanes 会被跳过。
+ * 初始化 IME 滚动锁定
  */
 export function initIMEHandling(): void {
   document.addEventListener('compositionstart', () => {
-    isIMEActive = true
+    isIMEComposing = true
+
+    if (!activeTab) return
+
+    // 收集需要锁定的元素：xterm viewports + 终端容器
+    const viewports = Array.from(activeTab.containerEl.querySelectorAll('.xterm-viewport')) as HTMLElement[]
+    const lockedElements: HTMLElement[] = [...viewports, terminalContainer]
+
+    // 记录当前 scrollTop
+    const savedPositions = new Map<HTMLElement, number>()
+    lockedElements.forEach((el) => {
+      savedPositions.set(el, el.scrollTop)
+    })
+
+    imeLockedElements = lockedElements
+
+    // scroll 监听器：浏览器自动滚动后立即恢复
+    imeScrollHandler = () => {
+      if (!isIMEComposing) return
+      requestAnimationFrame(() => {
+        lockedElements.forEach((el) => {
+          if (!el.isConnected) return
+          const saved = savedPositions.get(el)
+          if (saved !== undefined) {
+            el.scrollTop = saved
+          }
+        })
+      })
+    }
+
+    lockedElements.forEach((el) => {
+      el.addEventListener('scroll', imeScrollHandler!, { capture: true })
+    })
   })
 
   document.addEventListener('compositionend', () => {
-    isIMEActive = false
+    isIMEComposing = false
+
+    // 移除 scroll 监听器
+    if (imeScrollHandler && imeLockedElements) {
+      imeLockedElements.forEach((el) => {
+        el.removeEventListener('scroll', imeScrollHandler!, { capture: true })
+      })
+      imeScrollHandler = null
+      imeLockedElements = null
+    }
+
+    // composition 期间窗口可能发生了 resize，IME 结束后补一次 fit 同步 xterm 尺寸，
+    // 否则候选框位置会停在旧尺寸导致错位
+    if (activeTab) {
+      fitAllPanes(activeTab)
+    }
   })
 }
 
@@ -158,7 +213,7 @@ function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab): void {
     const child = node.children[index]
     const childContainer = document.createElement('div')
     childContainer.className = 'layout-child'
-    childContainer.style.flex = `${node.sizes[index]}`
+    childContainer.style.flex = `${node.sizes[index]} 0`
     childContainer.style.minWidth = `${MIN_PANE_WIDTH}px`
     childContainer.style.minHeight = `${MIN_PANE_HEIGHT}px`
     childContainer.style.position = 'relative'
@@ -351,7 +406,7 @@ function startResize(
     for (let i = 0; i < childCount; i++) {
       const percent = (sizes[i] / actualTotal) * 100
       container.sizes[i] = percent
-      childElements[i].style.flex = `${percent}`
+      childElements[i].style.flex = `${percent} 0`
     }
 
     // 更新 sash 状态反馈
@@ -415,11 +470,6 @@ function updateSashState(
 }
 
 export function fitAllPanes(tab: Tab): void {
-  // IME 输入期间跳过自动调整，避免输入法候选窗口触发 resize 导致终端内容被挤压
-  if (isIMEActive) {
-    return
-  }
-
   if (!tab.containerEl.isConnected || tab.containerEl.offsetWidth === 0 || tab.containerEl.offsetHeight === 0) {
     return
   }
@@ -427,6 +477,25 @@ export function fitAllPanes(tab: Tab): void {
   for (const pane of tab.panes.values()) {
     if (!pane.element.isConnected || pane.element.offsetWidth === 0 || pane.element.offsetHeight === 0) {
       continue
+    }
+
+    // 修补 fitAddon 的 scrollBarWidth：xterm 在构造时测量一次（元素未入 DOM 时回退到 15px），
+    // 但项目 CSS 使用 scrollbar-width: thin（凹槽 ~6px），导致 canvas 始终偏窄。
+    // 在 fit 前重新测量实际凹槽宽度，确保 canvas 宽度与容器精确匹配。
+    // 注意：_core 是 xterm.js 私有 API（测试版本 @xterm/xterm@5.5.0），未来升级需验证兼容性。
+    try {
+      const core = (pane.terminal as any)._core
+      const viewport = core?.viewport
+      const viewportEl = pane.element.querySelector('.xterm-viewport') as HTMLElement | null
+      const scrollAreaEl = pane.element.querySelector('.xterm-scroll-area') as HTMLElement | null
+      if (viewport && viewportEl && scrollAreaEl) {
+        const measured = viewportEl.offsetWidth - scrollAreaEl.offsetWidth
+        if (measured > 0) {
+          viewport.scrollBarWidth = measured
+        }
+      }
+    } catch {
+      // 忽略内部 API 访问异常
     }
 
     pane.fitAddon.fit()
@@ -444,8 +513,8 @@ export function fitAllPanes(tab: Tab): void {
  */
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
 
-export function initWindowResizeHandler(): void {
-  window.addEventListener('resize', () => {
+export function initWindowResizeHandler(): () => void {
+  const handleResize = (): void => {
     if (resizeTimer) clearTimeout(resizeTimer)
     resizeTimer = setTimeout(() => {
       // 重新适配所有标签的终端尺寸
@@ -455,5 +524,23 @@ export function initWindowResizeHandler(): void {
         }
       }
     }, 100) // 防抖 100ms，避免频繁触发
+  }
+  window.addEventListener('resize', handleResize)
+
+  // ResizeObserver 监听终端容器尺寸变化
+  // 捕获侧边栏切换、开发者工具变化等不触发 window.resize 的场景
+  const resizeObserver = new ResizeObserver(() => {
+    if (resizeTimer) clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+      if (activeTab) fitAllPanes(activeTab)
+    }, 100)
   })
+  resizeObserver.observe(terminalContainer)
+
+  // 返回清理函数，供需要时取消监听
+  return () => {
+    window.removeEventListener('resize', handleResize)
+    resizeObserver.disconnect()
+    if (resizeTimer) clearTimeout(resizeTimer)
+  }
 }

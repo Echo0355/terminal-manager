@@ -154,6 +154,14 @@ export function loadLayoutState(): LayoutState | null {
   const data = readJson(getLayoutPath())
   if (!data || typeof data !== 'object') return null
   if (!Array.isArray((data as any).tabs)) return null
+
+  // 校验版本号：当前仅支持 1.x 版本的布局格式
+  const version = (data as any).version
+  if (typeof version === 'string' && !version.startsWith('1.')) {
+    console.warn(`布局状态版本不兼容: ${version}，将使用默认布局`)
+    return null
+  }
+
   return data as LayoutState
 }
 

@@ -11,7 +11,7 @@ import {
   btnAddProject, statusThemeToggle,
   btnToggleSidebar, btnOpenSettings
 } from './state'
-import { handleConfirmCancel } from './ui-utils'
+import { handleConfirmCancel, showConfirm } from './ui-utils'
 import {
   addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab,
   closeCurrentPane, focusDirection, updatePaneCount, splitHorizontal, splitVertical
@@ -130,6 +130,16 @@ window.terminalAPI.onMenuEvent('menu:focus-right', () => focusDirection('right')
 window.terminalAPI.onMenuEvent('menu:focus-up', () => focusDirection('up'))
 window.terminalAPI.onMenuEvent('menu:focus-down', () => focusDirection('down'))
 window.terminalAPI.onMenuEvent('menu:settings', () => openSettings())
+
+// ── 应用关闭确认 ──
+
+window.terminalAPI.onCloseConfirmRequest(async () => {
+  const confirmed = await showConfirm(
+    '退出确认',
+    '确定要退出 Terminal Manager 吗？所有终端会话将被关闭，未保存的工作可能会丢失。'
+  )
+  window.terminalAPI.sendCloseConfirmResult(confirmed)
+})
 
 // ── 快捷键 ──
 

@@ -6,6 +6,7 @@
  */
 
 import type { LayoutNode, ContainerNode, LeafNode, Tab } from './types'
+export type { LayoutNode, ContainerNode, LeafNode }
 
 export function makeLeaf(paneId: string): LeafNode {
   return { type: 'leaf', paneId }
@@ -246,11 +247,11 @@ export function insertAtPosition(
   targetPaneId: string,
   sourceNode: LayoutNode,
   position: 'left' | 'right' | 'top' | 'bottom'
-): void {
+): boolean {
   const direction = (position === 'left' || position === 'right') ? 'horizontal' : 'vertical'
   const found = findParentAndIndex(root, targetPaneId)
 
-  if (!found) return
+  if (!found) return false
 
   const { parent, index } = found
 
@@ -267,4 +268,6 @@ export function insertAtPosition(
     ])
     parent.children[index] = newContainer
   }
+
+  return true
 }

@@ -1,4 +1,4 @@
-# 终端管理器
+# Terminal Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -10,7 +10,9 @@
 
 - [User Guide](./docs/USER_GUIDE.md) | [用户指南](./docs/USER_GUIDE_CN.md)
 - [已知限制](./docs/KNOWN_LIMITATIONS.md)
-- [开发和 AI 文档目录](./docs/README.md)
+- [更新日志](./docs/CHANGELOG.md)
+- [贡献指南](./docs/CONTRIBUTING.md)
+- [全部文档](./docs/README.md)
 
 ## 功能特性
 
@@ -31,7 +33,7 @@
 
 从 [Releases](https://github.com/Echo0355/terminal-manager/releases) 页面下载对应平台的安装包：
 
-- Windows: `终端管理器-0.1.0-Setup.exe`
+- Windows: `Terminal Manager-1.0.2-Setup.exe`
 
 ### 从源码构建
 
@@ -154,7 +156,7 @@ A: 请检查：
 
 ## 贡献
 
-欢迎贡献！请查看 [贡献指南](CLAUDE.md#贡献指南) 了解如何参与项目。
+欢迎贡献！请查看 [贡献指南](./docs/CONTRIBUTING.md) 了解如何参与项目。
 
 ### 快速开始
 
