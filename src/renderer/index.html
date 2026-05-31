@@ -788,10 +788,17 @@
         border: 2px solid rgba(0, 120, 212, 0.6);
       }
 
+      /* ── 面板操作按钮组 ── */
+      .pane-actions {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+      }
+
       /* ── 面板关闭按钮 ── */
       .pane-close-btn {
         position: static;
-        margin: 4px 4px 4px auto;
+        margin: 4px;
         width: 22px;
         height: 22px;
         display: flex;
@@ -812,6 +819,61 @@
         opacity: 1 !important;
         background: rgba(255, 255, 255, 0.1);
         color: var(--text-primary);
+      }
+
+      /* ── Claude 运行按钮 ── */
+      .claude-run-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 10;
+        width: 26px;
+        height: 26px;
+        padding: 2px;
+        border: none;
+        border-radius: 4px;
+        background: transparent;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.15s ease, background 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .claude-run-btn img {
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+      }
+
+      .pane-frame:hover .claude-run-btn,
+      .claude-run-btn:focus-visible {
+        opacity: 0.6;
+      }
+
+      .claude-run-btn:hover {
+        opacity: 1 !important;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* 分屏标签栏内的 Claude 按钮 — 与关闭按钮同行，静态定位 */
+      .pane-tab-strip .claude-run-btn {
+        position: static;
+        width: 22px;
+        height: 22px;
+        padding: 1px;
+        opacity: 0.65;
+        margin: 4px;
+      }
+
+      .pane-tab-strip .claude-run-btn img {
+        width: 16px;
+        height: 16px;
+      }
+
+      .pane-tab-strip .claude-run-btn:hover {
+        opacity: 1 !important;
       }
 
       /* ── 标签栏拖拽放置高亮 ── */

@@ -1,7 +1,7 @@
 import type { ContainerNode, LayoutNode, Pane, Tab } from './types'
 import { isLeaf } from './layout-ops'
 import { activeTab, requestSaveLayout, tabs, terminalContainer } from './state'
-import { createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
+import { createClaudeButton, createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
 import { normalizeSizes } from './layout-utils'
 
 type ClosePaneCallback = (tab: Tab, paneId: string) => void
@@ -84,6 +84,34 @@ export function registerFocusPaneCallback(fn: FocusPaneCallback): void {
   terminalContainer.addEventListener('mousedown', handleFocusMouseDown)
 }
 
+/**
+ * 注册 Claude 按钮点击回调
+ *
+ * 使用事件委托，在 terminalContainer 上监听所有 .claude-run-btn 的点击事件，
+ * 找到对应 pane 后向其终端发送 "claude\r" 命令。
+ */
+export function registerClaudeRunCallback(): void {
+  const handleClick = (event: Event): void => {
+    const button = (event.target as HTMLElement).closest('.claude-run-btn')
+    if (!button) return
+
+    event.stopPropagation()
+
+    const paneId = button.getAttribute('data-pane-id')
+    if (!paneId) return
+
+    const tab = tabs.find((item) => item.panes.has(paneId))
+    if (!tab) return
+
+    const pane = tab.panes.get(paneId)
+    if (pane?.sessionId) {
+      window.terminalAPI.writeToTerminal(pane.sessionId, 'claude\r')
+    }
+  }
+
+  terminalContainer.addEventListener('click', handleClick)
+}
+
 export function renderLayout(tab: Tab): void {
   for (const pane of tab.panes.values()) {
     pane.element.remove()
@@ -114,8 +142,7 @@ function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab): void {
     const frame = createPaneFrame(pane, tab, node.paneId, true)
     container.appendChild(frame)
 
-    pane.element.setAttribute('data-pane-id', node.paneId)
-    pane.element.setAttribute('data-tab-id', tab.id)
+    // data-pane-id / data-tab-id 已由 createPaneFrame 设置在 frame 上，无需在 pane.element 上重复
     pane.element.classList.toggle('focused', node.paneId === tab.focusedPaneId)
     return
   }
@@ -165,6 +192,9 @@ function createPaneFrame(pane: Pane, tab: Tab, paneId: string, _showHeader: bool
         title: getPaneDisplayTitle(pane, tab.title)
       })
     )
+  } else {
+    // 单面板时显示浮动的 Claude 运行按钮（分屏时按钮已在标签栏中）
+    frame.appendChild(createClaudeButton(paneId))
   }
 
   const body = document.createElement('div')

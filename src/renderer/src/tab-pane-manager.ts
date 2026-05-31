@@ -21,7 +21,7 @@ import {
   simplifyLayout
 } from './layout-ops'
 import { attachTabDrag } from './drag-drop'
-import { fitAllPanes, registerClosePaneCallback, registerFocusPaneCallback, renderLayout } from './layout-render'
+import { fitAllPanes, registerClaudeRunCallback, registerClosePaneCallback, registerFocusPaneCallback, renderLayout } from './layout-render'
 import {
   activeTab,
   appConfig,
@@ -50,6 +50,8 @@ registerClosePaneCallback((tab, paneId) => {
 registerFocusPaneCallback((tab, paneId) => {
   focusPane(tab, paneId)
 })
+
+registerClaudeRunCallback()
 
 /**
  * 布局保存已禁用 — 每次启动为空白状态，退出时清空布局文件。
@@ -337,13 +339,14 @@ export async function destroyPane(pane: Pane): Promise<void> {
   pane.cleanupData()
   pane.cleanupExit()
   pane.cleanupError()
-  pane.terminal.dispose()
+  // 先关闭 PTY 会话，再销毁终端对象，避免终端 dispose 后 PTY 仍向已销毁的写入端推送数据
   if (pane.sessionId) {
     await window.terminalAPI.closeTerminal(pane.sessionId)
   }
+  pane.terminal.dispose()
 }
 
-async function removeTab(tab: Tab): Promise<void> {
+function removeTab(tab: Tab): void {
   const index = tabs.indexOf(tab)
   if (index === -1) return
 
@@ -660,8 +663,11 @@ export async function closeTab(tab: Tab): Promise<void> {
   const index = tabs.indexOf(tab)
   if (index === -1) return
 
-  if (tabs.length > 1) {
-    const confirmed = await showConfirm('关闭标签', `确定要关闭标签“${tab.title}”吗？`)
+  if (tabs.length > 1 || tab.panes.size > 1) {
+    const message = tab.panes.size > 1
+      ? `确定要关闭标签”${tab.title}”吗？该标签包含 ${tab.panes.size} 个分屏面板，关闭后将全部销毁。`
+      : `确定要关闭标签”${tab.title}”吗？`
+    const confirmed = await showConfirm('关闭标签', message)
     if (!confirmed) return
   }
 
@@ -669,11 +675,7 @@ export async function closeTab(tab: Tab): Promise<void> {
     await destroyPane(pane)
   }
 
-  await removeTab(tab)
-  if (tabs.length === 0) {
-    await addTab()
-    return
-  }
+  removeTab(tab)
   scheduleSaveLayout()
 }
 
@@ -694,7 +696,7 @@ async function closeTabSilent(tab: Tab): Promise<void> {
     await destroyPane(pane)
   }
 
-  await removeTab(tab)
+  removeTab(tab)
   scheduleSaveLayout()
 }
 
