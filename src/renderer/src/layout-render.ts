@@ -19,18 +19,85 @@ let focusListenersBound = false
  * compositionupdate 时将 textarea 从 left:-9999em 移到光标位置，
  * 导致浏览器自动滚动以显示获得焦点的 textarea。
  *
- * 需要锁定两层：
+ * 需要锁定三类元素：
  * 1. .xterm-viewport — 终端内容滚动
- * 2. #terminal-container — 整个终端面板的位置（浏览器可能选择滚动父容器）
+ * 2. 分屏布局祖先容器 — overflow:hidden/clip 容器仍可能被浏览器改 scrollLeft/scrollTop
+ * 3. #terminal-container — 整个终端面板的位置（浏览器可能选择滚动父容器）
  *
- * 方案：compositionstart 时记录 scrollTop 并添加 scroll 监听器，
+ * 方案：compositionstart 时记录 scrollLeft/scrollTop 并添加 scroll 监听器，
  * 用 requestAnimationFrame 在浏览器自动滚动后立即恢复原位。
  * compositionend 时解除锁定。
  */
+interface ScrollPosition {
+  left: number
+  top: number
+}
+
 let isIMEComposing = false
 let imeScrollHandler: (() => void) | null = null
 /** compositionstart 时捕获的需要锁定的元素引用 */
 let imeLockedElements: HTMLElement[] | null = null
+let imeSavedPositions: Map<HTMLElement, ScrollPosition> | null = null
+let imeRestoreFrame: number | null = null
+
+function addIMEElement(targets: Set<HTMLElement>, element: Element | null | undefined): void {
+  if (element instanceof HTMLElement) {
+    targets.add(element)
+  }
+}
+
+function collectIMELockElements(): HTMLElement[] {
+  const targets = new Set<HTMLElement>()
+
+  addIMEElement(targets, document.documentElement)
+  addIMEElement(targets, document.body)
+  addIMEElement(targets, terminalContainer)
+
+  if (!activeTab) return Array.from(targets)
+
+  addIMEElement(targets, activeTab.containerEl)
+
+  const activeElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
+  let ancestor: HTMLElement | null = activeElement
+  while (ancestor) {
+    targets.add(ancestor)
+    if (ancestor === terminalContainer) break
+    ancestor = ancestor.parentElement
+  }
+
+  activeTab.containerEl
+    .querySelectorAll(
+      '.layout-container, .layout-child, .pane-frame, .pane-frame-body, .pane, .xterm, .xterm-helpers, .xterm-viewport'
+    )
+    .forEach((element) => addIMEElement(targets, element))
+
+  return Array.from(targets)
+}
+
+function restoreIMEScrollPositions(): void {
+  if (!imeSavedPositions) return
+
+  imeSavedPositions.forEach((saved, el) => {
+    if (!el.isConnected) return
+    if (el.scrollLeft !== saved.left) {
+      el.scrollLeft = saved.left
+    }
+    if (el.scrollTop !== saved.top) {
+      el.scrollTop = saved.top
+    }
+  })
+}
+
+function scheduleIMEScrollRestore(): void {
+  if (!isIMEComposing || imeRestoreFrame !== null) return
+
+  imeRestoreFrame = requestAnimationFrame(() => {
+    imeRestoreFrame = null
+    if (isIMEComposing) {
+      restoreIMEScrollPositions()
+    }
+  })
+}
 
 /**
  * 初始化 IME 滚动锁定
@@ -41,30 +108,23 @@ export function initIMEHandling(): void {
 
     if (!activeTab) return
 
-    // 收集需要锁定的元素：xterm viewports + 终端容器
-    const viewports = Array.from(activeTab.containerEl.querySelectorAll('.xterm-viewport')) as HTMLElement[]
-    const lockedElements: HTMLElement[] = [...viewports, terminalContainer]
+    // 组合开始前先同步一次尺寸，避免候选框沿用分屏重排前的旧坐标。
+    fitAllPanes(activeTab)
 
-    // 记录当前 scrollTop
-    const savedPositions = new Map<HTMLElement, number>()
+    const lockedElements = collectIMELockElements()
+
+    // 记录当前 scrollLeft/scrollTop
+    const savedPositions = new Map<HTMLElement, ScrollPosition>()
     lockedElements.forEach((el) => {
-      savedPositions.set(el, el.scrollTop)
+      savedPositions.set(el, { left: el.scrollLeft, top: el.scrollTop })
     })
 
     imeLockedElements = lockedElements
+    imeSavedPositions = savedPositions
 
     // scroll 监听器：浏览器自动滚动后立即恢复
     imeScrollHandler = () => {
-      if (!isIMEComposing) return
-      requestAnimationFrame(() => {
-        lockedElements.forEach((el) => {
-          if (!el.isConnected) return
-          const saved = savedPositions.get(el)
-          if (saved !== undefined) {
-            el.scrollTop = saved
-          }
-        })
-      })
+      scheduleIMEScrollRestore()
     }
 
     lockedElements.forEach((el) => {
@@ -72,7 +132,12 @@ export function initIMEHandling(): void {
     })
   })
 
+  document.addEventListener('compositionupdate', () => {
+    scheduleIMEScrollRestore()
+  })
+
   document.addEventListener('compositionend', () => {
+    restoreIMEScrollPositions()
     isIMEComposing = false
 
     // 移除 scroll 监听器
@@ -82,6 +147,11 @@ export function initIMEHandling(): void {
       })
       imeScrollHandler = null
       imeLockedElements = null
+    }
+    imeSavedPositions = null
+    if (imeRestoreFrame !== null) {
+      cancelAnimationFrame(imeRestoreFrame)
+      imeRestoreFrame = null
     }
 
     // composition 期间窗口可能发生了 resize，IME 结束后补一次 fit 同步 xterm 尺寸，
@@ -177,6 +247,11 @@ export function renderLayout(tab: Tab): void {
 
   if (isTabVisible(tab)) {
     fitAllPanes(tab)
+    requestAnimationFrame(() => {
+      if (isTabVisible(tab)) {
+        fitAllPanes(tab)
+      }
+    })
   }
 }
 
@@ -217,7 +292,7 @@ function renderNode(node: LayoutNode, container: HTMLElement, tab: Tab): void {
     childContainer.style.minWidth = `${MIN_PANE_WIDTH}px`
     childContainer.style.minHeight = `${MIN_PANE_HEIGHT}px`
     childContainer.style.position = 'relative'
-    childContainer.style.overflow = 'hidden'
+    childContainer.style.overflow = 'clip'
 
     renderNode(child, childContainer, tab)
     wrapper.appendChild(childContainer)

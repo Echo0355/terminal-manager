@@ -33,7 +33,7 @@
 
 从 [Releases](https://github.com/Echo0355/terminal-manager/releases) 页面下载对应平台的安装包：
 
-- Windows: `Terminal Manager-1.0.2-Setup.exe`
+- Windows: `Terminal Manager-1.1.2-Setup.exe`
 
 ### 从源码构建
 

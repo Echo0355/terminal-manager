@@ -33,7 +33,7 @@ English | **[中文](./README_CN.md)**
 
 Download the installer for your platform from the [Releases](https://github.com/Echo0355/terminal-manager/releases) page:
 
-- Windows: `terminal-manager-0.1.0-Setup.exe`
+- Windows: `Terminal Manager-1.1.2-Setup.exe`
 
 ### Build from Source
 

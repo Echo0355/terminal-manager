@@ -526,7 +526,7 @@
       #terminal-container {
         flex: 1;
         position: relative;
-        overflow: hidden;
+        overflow: clip;
         background: var(--bg-base);
         min-height: 0;
       }
@@ -534,7 +534,7 @@
       .tab-content {
         position: absolute;
         inset: 0;
-        overflow: hidden;
+        overflow: clip;
       }
 
       /* ── Pane 样式 ── */
@@ -564,6 +564,7 @@
         min-width: 0;
         min-height: 0;
         position: relative;
+        overflow: clip;
       }
 
       .pane {
@@ -572,6 +573,7 @@
         position: relative;
         min-width: 0;
         min-height: 0;
+        overflow: clip;
       }
 
       .pane .xterm {
@@ -616,12 +618,12 @@
       .layout-container {
         width: 100%;
         height: 100%;
-        overflow: hidden;
+        overflow: clip;
       }
 
       .layout-child {
         position: relative;
-        overflow: hidden;
+        overflow: clip;
       }
 
       /* ── 分割线 ── */
