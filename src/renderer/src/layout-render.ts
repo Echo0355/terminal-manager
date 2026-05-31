@@ -343,7 +343,7 @@ function startResize(
    * 关键设计：
    * - 始终在像素空间中操作，避免百分比累积误差
    * - 上游传播：deltaUp 从 effectiveDelta 开始，每个 view 吸收后递减
-   * - 下游传播：deltaDown 从 0 开始，每个 view 的 viewDelta 累加到 deltaDown
+   * - 下游传播：deltaDown 从 effectiveDelta 开始，每个 view 吸收后递减
    * - 这确保了对称性：拖回原位时 sizes 精确恢复
    */
   const applyResize = (delta: number): void => {
@@ -372,8 +372,6 @@ function startResize(
     const maxDelta = Math.min(maxDeltaUp, maxDeltaDown)
     const effectiveDelta = Math.max(minDelta, Math.min(maxDelta, delta))
 
-    if (effectiveDelta === 0) return
-
     // ── 步骤 4：上游传播（从 sashIndex 向左/上）──
     // VS Code: deltaUp -= viewDelta
     // viewDelta = clamp(size + deltaUp, min, max) - size
@@ -384,15 +382,14 @@ function startResize(
       const viewDelta = newSize - sizes[i]
       sizes[i] = newSize
       deltaUp -= viewDelta
-      if (deltaUp <= 0) break
+      if (deltaUp === 0) break
     }
 
     // ── 步骤 5：下游传播（从 sashIndex+1 向右/下）──
-    // VS Code: deltaDown += viewDelta（累积式传播）
+    // VS Code: deltaDown += viewDelta（viewDelta 为负数时递减）
     // viewDelta = clamp(size - deltaDown, min, max) - size
-    // 当某个 view 达到 maxSize 无法完全吸收 delta 时，
-    // 剩余的 deltaDown 自动传播到下一个 view（级联效应）
-    let deltaDown = 0
+    // 当某个 view 达到 min/max 无法完全吸收 delta 时，剩余 delta 自动传播到下一个 view。
+    let deltaDown = effectiveDelta
     for (let i = sashIndex + 1; i < childCount; i++) {
       const newSize = Math.max(minSize, Math.min(maxSizes[i], sizes[i] - deltaDown))
       const viewDelta = newSize - sizes[i]
@@ -490,7 +487,7 @@ export function fitAllPanes(tab: Tab): void {
       const scrollAreaEl = pane.element.querySelector('.xterm-scroll-area') as HTMLElement | null
       if (viewport && viewportEl && scrollAreaEl) {
         const measured = viewportEl.offsetWidth - scrollAreaEl.offsetWidth
-        if (measured > 0) {
+        if (measured >= 0) {
           viewport.scrollBarWidth = measured
         }
       }

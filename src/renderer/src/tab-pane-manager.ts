@@ -248,6 +248,58 @@ function bindTerminalClipboard(terminal: Terminal, element: HTMLElement): void {
   })
 }
 
+const SCROLL_BOTTOM_EPSILON = 2
+
+function getTerminalCore(terminal: Terminal): any {
+  return (terminal as any)._core
+}
+
+function syncTerminalScrollArea(terminal: Terminal): void {
+  const viewport = getTerminalCore(terminal)?.viewport
+  if (typeof viewport?.syncScrollArea === 'function') {
+    viewport.syncScrollArea(true)
+  }
+}
+
+function isTerminalBufferAtBottom(terminal: Terminal): boolean {
+  const buffer = terminal.buffer.active
+  return buffer.viewportY >= buffer.baseY
+}
+
+function isTerminalViewportAtBottom(terminal: Terminal): boolean {
+  const viewportEl = terminal.element?.querySelector('.xterm-viewport') as HTMLElement | null
+  if (!viewportEl) return isTerminalBufferAtBottom(terminal)
+
+  return viewportEl.scrollTop + viewportEl.clientHeight >= viewportEl.scrollHeight - SCROLL_BOTTOM_EPSILON
+}
+
+function isTerminalUserScrolling(terminal: Terminal): boolean {
+  const isUserScrolling = getTerminalCore(terminal)?._bufferService?.isUserScrolling
+  if (typeof isUserScrolling === 'boolean') {
+    return isUserScrolling
+  }
+
+  return !isTerminalBufferAtBottom(terminal)
+}
+
+function shouldStickToBottom(terminal: Terminal): boolean {
+  return !isTerminalUserScrolling(terminal) || isTerminalBufferAtBottom(terminal) || isTerminalViewportAtBottom(terminal)
+}
+
+function writeTerminalOutput(terminal: Terminal, data: string): void {
+  const stickToBottom = shouldStickToBottom(terminal)
+
+  terminal.write(data, () => {
+    const viewportWasAtBottom = isTerminalViewportAtBottom(terminal)
+    syncTerminalScrollArea(terminal)
+
+    if (stickToBottom || viewportWasAtBottom || isTerminalViewportAtBottom(terminal)) {
+      terminal.scrollToBottom()
+      syncTerminalScrollArea(terminal)
+    }
+  })
+}
+
 export async function createTerminalPane(options?: { shell?: string; cwd?: string; title?: string }): Promise<Pane> {
   const id = `pane_${incrementPaneCounter()}`
 
@@ -268,6 +320,12 @@ export async function createTerminalPane(options?: { shell?: string; cwd?: strin
   const element = document.createElement('div')
   element.className = 'pane'
   terminal.open(element)
+
+  // 延迟初始化滚动位置，确保终端完全渲染后再设置
+  // 解决问题：第一次输出较长内容时滚动条不出现
+  requestAnimationFrame(() => {
+    terminal.scrollToBottom()
+  })
 
   const result = await window.terminalAPI.createTerminal({
     cols: terminal.cols,
@@ -309,7 +367,7 @@ export async function createTerminalPane(options?: { shell?: string; cwd?: strin
   bindTerminalClipboard(terminal, element)
 
   const cleanupData = window.terminalAPI.onTerminalData(sessionId, (data) => {
-    terminal.write(data)
+    writeTerminalOutput(terminal, data)
   })
 
   const cleanupExit = window.terminalAPI.onTerminalExit(sessionId, () => {
