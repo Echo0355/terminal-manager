@@ -8,8 +8,8 @@ English | **[中文](./README_CN.md)**
 
 ## Documentation
 
-- [User Guide](./USER_GUIDE.md) | [用户指南](./USER_GUIDE_CN.md)
-- [Known Limitations](./KNOWN_LIMITATIONS.md)
+- [User Guide](./docs/USER_GUIDE.md) | [用户指南](./docs/USER_GUIDE_CN.md)
+- [Known Limitations](./docs/KNOWN_LIMITATIONS.md)
 - [Development & AI Documentation](./docs/README.md)
 
 ## Features

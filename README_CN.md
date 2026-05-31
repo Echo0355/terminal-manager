@@ -8,8 +8,8 @@
 
 ## 文档
 
-- [User Guide](./USER_GUIDE.md) | [用户指南](./USER_GUIDE_CN.md)
-- [已知限制](./KNOWN_LIMITATIONS.md)
+- [User Guide](./docs/USER_GUIDE.md) | [用户指南](./docs/USER_GUIDE_CN.md)
+- [已知限制](./docs/KNOWN_LIMITATIONS.md)
 - [开发和 AI 文档目录](./docs/README.md)
 
 ## 功能特性
