@@ -1127,6 +1127,55 @@
         flex: 1;
       }
 
+      /* ── 终端右键菜单 ── */
+      .terminal-context-menu {
+        position: fixed;
+        z-index: 600;
+        min-width: 180px;
+        padding: 4px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        box-shadow: var(--shadow-dialog);
+      }
+
+      .terminal-context-menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        width: 100%;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 3px;
+        color: var(--text-primary);
+        background: transparent;
+        font: inherit;
+        font-size: 12px;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .terminal-context-menu-item:hover:not(:disabled) {
+        color: var(--text-bright);
+        background: var(--accent);
+      }
+
+      .terminal-context-menu-item:disabled {
+        color: var(--text-disabled);
+        cursor: default;
+        opacity: 0.65;
+      }
+
+      .terminal-context-menu-shortcut {
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+
+      .terminal-context-menu-item:hover:not(:disabled) .terminal-context-menu-shortcut {
+        color: inherit;
+      }
+
       /* ── 设置对话框 ── */
       #settings-overlay {
         position: fixed;

@@ -42,6 +42,7 @@ import {
 import { THEMES, type LayoutNode, type LayoutStateNode, type Pane, type Tab, type TabState } from './types'
 import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from './tab-chrome'
 import { showConfirm, showNotification } from './ui-utils'
+import { showTerminalContextMenu } from './terminal-context-menu'
 
 registerClosePaneCallback((tab, paneId) => {
   void closePane(tab, paneId)
@@ -240,12 +241,46 @@ function bindTerminalClipboard(terminal: Terminal, element: HTMLElement): void {
     }
   })
 
+  // xterm 默认右键会移动并聚焦隐藏 textarea。捕获阶段拦截该行为，
+  // 避免影响 IME 定位，并交由应用菜单明确执行剪贴板操作。
+  element.addEventListener('mousedown', (event) => {
+    if (event.button === 2) {
+      event.stopImmediatePropagation()
+    }
+  }, { capture: true })
+
   element.addEventListener('contextmenu', (event) => {
     event.preventDefault()
-    if (!copyTerminalSelection(terminal)) {
-      pasteClipboardToTerminal(terminal)
-    }
-  })
+    event.stopImmediatePropagation()
+
+    showTerminalContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      items: [
+        {
+          id: 'copy',
+          label: '复制',
+          shortcut: 'Ctrl+C',
+          enabled: terminal.hasSelection(),
+          onSelect: () => copyTerminalSelection(terminal)
+        },
+        {
+          id: 'paste',
+          label: '粘贴',
+          shortcut: 'Ctrl+V',
+          enabled: Boolean(window.terminalAPI.readClipboardText()),
+          onSelect: () => pasteClipboardToTerminal(terminal)
+        },
+        {
+          id: 'cut',
+          label: '剪切',
+          shortcut: 'Ctrl+X',
+          enabled: false,
+          title: '终端输出不可编辑，无法剪切'
+        }
+      ]
+    })
+  }, { capture: true })
 }
 
 const SCROLL_BOTTOM_EPSILON = 2
