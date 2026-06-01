@@ -580,6 +580,14 @@
         height: 100%;
       }
 
+      /* xterm 在每次 render 时会跟随终端光标移动 IME 辅助元素。
+         组合输入期间固定初始坐标，避免 Claude Code 输出导致候选框闪烁和错位。 */
+      .pane .xterm.ime-composing .xterm-helper-textarea,
+      .pane .xterm.ime-composing .composition-view {
+        left: var(--ime-anchor-left) !important;
+        top: var(--ime-anchor-top) !important;
+      }
+
       /* xterm viewport 滚动条样式
          - 保持 overflow-y: scroll（xterm 默认值），不可改为 auto
          - fitAddon 的 scrollBarWidth 在构造时一次性测量，auto 会导致回退到 15px 常量

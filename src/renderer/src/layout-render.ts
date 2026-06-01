@@ -3,6 +3,7 @@ import { isLeaf } from './layout-ops'
 import { activeTab, requestSaveLayout, tabs, terminalContainer } from './state'
 import { createClaudeButton, createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
 import { normalizeSizes } from './layout-utils'
+import { pinIMECompositionAnchor, releaseIMECompositionAnchor } from './ime-handling'
 
 type ClosePaneCallback = (tab: Tab, paneId: string) => void
 type FocusPaneCallback = (tab: Tab, paneId: string) => void
@@ -15,18 +16,17 @@ let focusListenersBound = false
 /**
  * IME 组合期间的滚动锁定
  *
- * xterm.js 的 CompositionHelper.updateCompositionElements() 在每次
- * compositionupdate 时将 textarea 从 left:-9999em 移到光标位置，
- * 导致浏览器自动滚动以显示获得焦点的 textarea。
+ * xterm.js 的 CompositionHelper.updateCompositionElements() 在每次 render 时
+ * 将 textarea 和预编辑文字移到当前终端光标位置。Claude Code 持续输出时
+ * 光标不断变化，会导致输入法候选框闪烁和错位。
  *
- * 需要锁定三类元素：
- * 1. .xterm-viewport — 终端内容滚动
- * 2. 分屏布局祖先容器 — overflow:hidden/clip 容器仍可能被浏览器改 scrollLeft/scrollTop
- * 3. #terminal-container — 整个终端面板的位置（浏览器可能选择滚动父容器）
+ * 处理方案：
+ * 1. compositionstart 时固定 textarea 和预编辑文字的坐标，compositionend 时释放。
+ * 2. 锁定分屏布局祖先容器，阻止浏览器为显示 textarea 自动滚动。
+ * 3. 不锁定 .xterm-viewport，允许终端输出期间正常滚动。
+ * 4. 组合输入期间跳过 fit，结束后再补一次尺寸同步。
  *
- * 方案：compositionstart 时记录 scrollLeft/scrollTop 并添加 scroll 监听器，
- * 用 requestAnimationFrame 在浏览器自动滚动后立即恢复原位。
- * compositionend 时解除锁定。
+ * 滚动锁使用 requestAnimationFrame 在浏览器自动滚动后立即恢复原位。
  */
 interface ScrollPosition {
   left: number
@@ -39,6 +39,8 @@ let imeScrollHandler: (() => void) | null = null
 let imeLockedElements: HTMLElement[] | null = null
 let imeSavedPositions: Map<HTMLElement, ScrollPosition> | null = null
 let imeRestoreFrame: number | null = null
+let imePinnedTerminal: HTMLElement | null = null
+let imeNeedsFit = false
 
 function addIMEElement(targets: Set<HTMLElement>, element: Element | null | undefined): void {
   if (element instanceof HTMLElement) {
@@ -46,7 +48,7 @@ function addIMEElement(targets: Set<HTMLElement>, element: Element | null | unde
   }
 }
 
-function collectIMELockElements(): HTMLElement[] {
+function collectIMELockElements(target: EventTarget | null): HTMLElement[] {
   const targets = new Set<HTMLElement>()
 
   addIMEElement(targets, document.documentElement)
@@ -57,19 +59,17 @@ function collectIMELockElements(): HTMLElement[] {
 
   addIMEElement(targets, activeTab.containerEl)
 
-  const activeElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
-  let ancestor: HTMLElement | null = activeElement
+  const activeElement = target instanceof HTMLElement
+    ? target
+    : document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null
+  let ancestor: HTMLElement | null = activeElement?.parentElement ?? null
   while (ancestor) {
     targets.add(ancestor)
     if (ancestor === terminalContainer) break
     ancestor = ancestor.parentElement
   }
-
-  activeTab.containerEl
-    .querySelectorAll(
-      '.layout-container, .layout-child, .pane-frame, .pane-frame-body, .pane, .xterm, .xterm-helpers, .xterm-viewport'
-    )
-    .forEach((element) => addIMEElement(targets, element))
 
   return Array.from(targets)
 }
@@ -103,15 +103,13 @@ function scheduleIMEScrollRestore(): void {
  * 初始化 IME 滚动锁定
  */
 export function initIMEHandling(): void {
-  document.addEventListener('compositionstart', () => {
+  document.addEventListener('compositionstart', (event) => {
     isIMEComposing = true
+    imePinnedTerminal = pinIMECompositionAnchor(event.target)
 
     if (!activeTab) return
 
-    // 组合开始前先同步一次尺寸，避免候选框沿用分屏重排前的旧坐标。
-    fitAllPanes(activeTab)
-
-    const lockedElements = collectIMELockElements()
+    const lockedElements = collectIMELockElements(event.target)
 
     // 记录当前 scrollLeft/scrollTop
     const savedPositions = new Map<HTMLElement, ScrollPosition>()
@@ -132,13 +130,18 @@ export function initIMEHandling(): void {
     })
   })
 
-  document.addEventListener('compositionupdate', () => {
+  document.addEventListener('compositionupdate', (event) => {
+    if (!imePinnedTerminal) {
+      imePinnedTerminal = pinIMECompositionAnchor(event.target)
+    }
     scheduleIMEScrollRestore()
   })
 
   document.addEventListener('compositionend', () => {
     restoreIMEScrollPositions()
     isIMEComposing = false
+    releaseIMECompositionAnchor(imePinnedTerminal)
+    imePinnedTerminal = null
 
     // 移除 scroll 监听器
     if (imeScrollHandler && imeLockedElements) {
@@ -154,9 +157,10 @@ export function initIMEHandling(): void {
       imeRestoreFrame = null
     }
 
-    // composition 期间窗口可能发生了 resize，IME 结束后补一次 fit 同步 xterm 尺寸，
-    // 否则候选框位置会停在旧尺寸导致错位
-    if (activeTab) {
+    // composition 期间窗口可能发生 resize，结束后补一次尺寸同步。
+    const shouldFit = imeNeedsFit
+    imeNeedsFit = false
+    if (shouldFit && activeTab) {
       fitAllPanes(activeTab)
     }
   })
@@ -542,6 +546,11 @@ function updateSashState(
 }
 
 export function fitAllPanes(tab: Tab): void {
+  if (isIMEComposing) {
+    imeNeedsFit = true
+    return
+  }
+
   if (!tab.containerEl.isConnected || tab.containerEl.offsetWidth === 0 || tab.containerEl.offsetHeight === 0) {
     return
   }
