@@ -8,7 +8,7 @@ import { app, BrowserWindow } from 'electron'
 import { detectShells } from './shell-detector'
 import { init as initPtyIpc, killAllSessions } from './pty-ipc'
 import { createMenu } from './menu'
-import { createWindow } from './window'
+import { createWindow, isAppQuitting } from './window'
 import { clearLayoutState } from './data-store'
 
 let mainWindow: BrowserWindow | null = null
@@ -32,7 +32,9 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   killAllSessions()
   clearLayoutState()
-  if (process.platform !== 'darwin') {
+  // macOS: 如果是用户主动退出（Cmd+Q/程序坞退出），调用 app.quit() 完全退出
+  // 否则只关闭窗口，应用保留在程序坞中（macOS 惯例）
+  if (process.platform !== 'darwin' || isAppQuitting) {
     app.quit()
   }
 })

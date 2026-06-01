@@ -2,12 +2,23 @@
  * 窗口创建和生命周期
  */
 
-import { shell, BrowserWindow, ipcMain, nativeImage } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, nativeImage } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 
 /** 当前等待关闭确认的窗口引用 */
 let pendingCloseWindow: BrowserWindow | null = null
+
+/**
+ * 标记用户是否通过 Cmd+Q 或程序坞右键"退出"触发了应用退出
+ * 用于区分"关闭窗口"和"退出应用"两种场景
+ */
+export let isAppQuitting = false
+
+// 监听应用退出事件（Cmd+Q、程序坞右键退出等触发）
+app.on('before-quit', () => {
+  isAppQuitting = true
+})
 
 // 注册一次全局监听器，避免 createWindow 重复注册
 ipcMain.on('app:close-confirm-result', (_event, confirmed: boolean) => {
@@ -49,8 +60,9 @@ export function createWindow(): BrowserWindow {
   })
 
   // 关闭窗口前弹出确认对话框，防止误操作导致终端会话丢失
+  // 如果是用户通过 Cmd+Q 或程序坞退出（isAppQuitting=true），直接允许关闭
   mainWindow.on('close', (event) => {
-    if (!(mainWindow as any)._isForceClose) {
+    if (!(mainWindow as any)._isForceClose && !isAppQuitting) {
       event.preventDefault()
       pendingCloseWindow = mainWindow
       // 通知渲染进程显示自定义确认对话框
