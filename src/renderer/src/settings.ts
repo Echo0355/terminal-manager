@@ -73,7 +73,7 @@ export async function saveSettings(): Promise<void> {
   const activeThemeBtn = settingsOverlay.querySelector('.theme-option.active') as HTMLElement
   const newConfig: Config = {
     general: {
-      defaultShell: settingShell.value.trim() || 'powershell.exe',
+      defaultShell: settingShell.value.trim() || appConfig.general.defaultShell,
       defaultCwd: settingCwd.value.trim(),
       fontSize: Math.max(8, Math.min(32, parseInt(settingFontSize.value) || 14)),
       theme: activeThemeBtn?.dataset.theme === 'light' ? 'light' : 'dark',

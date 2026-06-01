@@ -1,21 +1,28 @@
 {
   "name": "terminal-manager",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "A cross-platform multi-terminal manager built with Electron",
   "author": "Terminal Manager",
   "license": "MIT",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "npm run prepare:node-pty && electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
+    "prepare:node-pty": "node scripts/fix-node-pty-permissions.cjs",
+    "postinstall": "npm run prepare:node-pty",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "test": "vitest run",
     "test:watch": "vitest",
-    "package": "npm run build && electron-builder build --win --config",
-    "package:dir": "npm run build && electron-builder build --win --dir --config"
+    "package": "npm run package:current",
+    "package:current": "npm run prepare:node-pty && npm run build && electron-builder build --config electron-builder.yml",
+    "package:dir": "npm run prepare:node-pty && npm run build && electron-builder build --dir --config electron-builder.yml",
+    "package:win": "npm run prepare:node-pty && npm run build && electron-builder build --win --x64 --config electron-builder.yml",
+    "package:mac": "npm run prepare:node-pty && npm run build && electron-builder build --mac --config electron-builder.yml",
+    "package:mac:x64": "npm run prepare:node-pty && npm run build && electron-builder build --mac --x64 --config electron-builder.yml",
+    "package:mac:arm64": "npm run prepare:node-pty && npm run build && electron-builder build --mac --arm64 --config electron-builder.yml"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",

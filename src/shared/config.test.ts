@@ -6,7 +6,9 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { clamp, getDefaultConfig, validateConfig, type Config } from './config'
+import {
+  clamp, getDefaultConfig, getDefaultShellForPlatform, validateConfig, type Config
+} from './config'
 
 describe('clamp', () => {
   it('值在范围内返回原值', () => {
@@ -33,9 +35,14 @@ describe('getDefaultConfig', () => {
     expect(config.general.defaultShell).toBe('powershell.exe')
   })
 
-  it('非 Windows 默认 shell 为 /bin/zsh', () => {
+  it('macOS 默认 shell 为 /bin/zsh', () => {
     const config = getDefaultConfig('darwin')
     expect(config.general.defaultShell).toBe('/bin/zsh')
+  })
+
+  it('Linux 默认 shell 为 /bin/sh', () => {
+    const config = getDefaultConfig('linux')
+    expect(config.general.defaultShell).toBe('/bin/sh')
   })
 
   it('默认字体大小为 14', () => {
@@ -112,12 +119,12 @@ describe('validateConfig', () => {
 
   it('非字符串 shell 使用默认值', () => {
     const input = { general: { defaultShell: 123 } }
-    expect(validateConfig(input).general.defaultShell).toBe('powershell.exe')
+    expect(validateConfig(input, 'win32').general.defaultShell).toBe('powershell.exe')
   })
 
   it('空字符串 shell 使用默认值', () => {
     const input = { general: { defaultShell: '' } }
-    expect(validateConfig(input).general.defaultShell).toBe('powershell.exe')
+    expect(validateConfig(input, 'win32').general.defaultShell).toBe('powershell.exe')
   })
 
   it('非数字 fontSize 使用默认值', () => {
@@ -132,10 +139,16 @@ describe('validateConfig', () => {
 
   it('部分字段缺失使用默认值填充', () => {
     const input = { general: { fontSize: 20 } }
-    const config = validateConfig(input)
+    const config = validateConfig(input, 'win32')
     expect(config.general.fontSize).toBe(20)
     expect(config.general.defaultShell).toBe('powershell.exe')
     expect(config.general.theme).toBe('dark')
     expect(config.general.scrollback).toBe(10000)
+  })
+})
+
+describe('getDefaultShellForPlatform', () => {
+  it('未知类 Unix 平台回退到 /bin/sh', () => {
+    expect(getDefaultShellForPlatform('freebsd')).toBe('/bin/sh')
   })
 })

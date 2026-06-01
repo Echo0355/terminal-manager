@@ -46,10 +46,21 @@ export function clamp(value: number, min: number, max: number): number {
 // ── 默认配置 ──
 
 /**
+ * 获取平台默认 Shell
+ *
+ * @param platform - 运行平台
+ * @returns Windows 使用 PowerShell，macOS 使用 zsh，Linux 使用 sh
+ */
+export function getDefaultShellForPlatform(platform: NodeJS.Platform = process.platform): string {
+  if (platform === 'win32') return 'powershell.exe'
+  if (platform === 'darwin') return '/bin/zsh'
+  return '/bin/sh'
+}
+
+/**
  * 生成默认配置
  *
  * 根据运行平台返回合理的默认值。
- * Windows 默认使用 PowerShell，其他平台默认使用 zsh。
  *
  * @param platform - 运行平台，默认为当前平台
  * @returns 包含默认值的配置对象
@@ -57,7 +68,7 @@ export function clamp(value: number, min: number, max: number): number {
 export function getDefaultConfig(platform: NodeJS.Platform = process.platform): Config {
   return {
     general: {
-      defaultShell: platform === 'win32' ? 'powershell.exe' : '/bin/zsh',
+      defaultShell: getDefaultShellForPlatform(platform),
       defaultCwd: '',
       fontSize: 14,
       theme: 'dark',

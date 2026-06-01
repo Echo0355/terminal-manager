@@ -6,7 +6,7 @@
 
 ## 平台支持
 
-- **仅支持 Windows 和 macOS**：暂不支持 Linux 发行版
+- **仅支持 Windows 和 macOS**：暂不提供 Linux 安装包
 - **Windows 10 1809+**：旧版本 Windows 10 可能存在兼容性问题
 
 ## 终端功能

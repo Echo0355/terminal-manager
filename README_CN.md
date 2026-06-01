@@ -33,7 +33,8 @@
 
 从 [Releases](https://github.com/Echo0355/terminal-manager/releases) 页面下载对应平台的安装包：
 
-- Windows: `Terminal Manager-1.1.2-Setup.exe`
+- Windows: `Terminal Manager-1.2.0-x64-Setup.exe`
+- macOS: `Terminal Manager-1.2.0-arm64.dmg` 或 `Terminal Manager-1.2.0-x64.dmg`
 
 ### 从源码构建
 
@@ -48,10 +49,17 @@ npm install
 # 开发模式运行
 npm run dev
 
-# 构建打包
+# 构建当前系统的安装包
 npm run build
 npm run package
+
+# 按目标平台打包
+npm run package:win
+npm run package:mac
 ```
+
+`node-pty` 是原生模块。正式发布时建议使用仓库内置的 GitHub Actions 工作流，
+分别在 Windows 和 macOS 环境构建对应安装包。
 
 ## 快速开始
 

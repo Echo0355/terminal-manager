@@ -20,10 +20,11 @@ ipcMain.on('app:close-confirm-result', (_event, confirmed: boolean) => {
 })
 
 export function createWindow(): BrowserWindow {
-  // 应用图标：开发模式读取 build/icon.ico，打包后从 resources 目录读取
+  // 应用图标：Windows 使用 ico，macOS 和 Linux 使用 png
+  const iconFilename = process.platform === 'win32' ? 'icon.ico' : 'icon.png'
   const iconPath = is.dev
-    ? join(__dirname, '../../build/icon.ico')
-    : join(process.resourcesPath, 'favicon.ico')
+    ? join(__dirname, `../../build/${iconFilename}`)
+    : join(process.resourcesPath, iconFilename)
   const icon = nativeImage.createFromPath(iconPath)
 
   // sandbox: false — node-pty 原生模块需要在渲染进程预加载脚本中运行，

@@ -78,7 +78,7 @@ export function createMenu(mainWindow: BrowserWindow | null): void {
             dialog.showMessageBox(mainWindow!, {
               type: 'info',
               title: '关于',
-              message: 'Terminal Manager v1.0.2',
+              message: 'Terminal Manager v1.2.0',
               detail: '一个基于 Electron 的跨平台多终端管理工具。'
             })
           }

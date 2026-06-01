@@ -2,6 +2,24 @@
 
 本文件记录 Terminal Manager 的版本更新历史。格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [1.2.0] - 2026-06-01
+
+### 新增
+
+- **macOS 安装包**：支持构建 ARM64/x64 架构的 dmg 和 zip 安装包
+- **跨平台构建工作流**：新增 GitHub Actions 矩阵，在 Windows 和 macOS 环境分别构建安装包
+
+### 修复
+
+- **macOS 终端启动失败**：打包和开发启动前自动修复 `node-pty` 预编译 `spawn-helper` 的执行权限，解决 `posix_spawnp failed`
+- **macOS Homebrew 命令不可用**：PTY 环境自动补充 Homebrew 和常见本地命令路径，修复从 Finder 启动应用后无法执行 `claude` 等 CLI 的问题
+- **跨平台 Shell 默认值**：移除渲染进程中写死的 `powershell.exe` 回退值，按平台选择默认 Shell
+
+### 改进
+
+- **平台图标资源**：Windows 使用 ico，macOS 使用 png，并在打包后携带对应运行时图标
+- **打包脚本拆分**：新增当前系统、Windows、macOS ARM64 和 macOS x64 的独立打包命令
+
 ## [1.1.2] - 2026-05-31
 
 ### 修复

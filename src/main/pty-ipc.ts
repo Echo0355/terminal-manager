@@ -14,6 +14,7 @@ import {
   type Config, type Project
 } from './data-store'
 import { isValidString, isValidNumber, validateCwd } from './validation'
+import { buildPtyEnv } from './pty-env'
 
 // ── PTY 会话 ──
 
@@ -25,23 +26,6 @@ interface PtySession {
 }
 
 const sessions = new Map<string, PtySession>()
-
-/** 传递给子进程时应排除的敏感环境变量模式 */
-const SENSITIVE_ENV_PATTERNS = [
-  /token/i, /secret/i, /password/i, /credential/i,
-  /api[_-]?key/i, /auth/i, /private[_-]?key/i
-]
-
-/** 过滤敏感环境变量，只保留安全的变量传递给子进程 */
-function sanitizeEnv(env: NodeJS.ProcessEnv): Record<string, string> {
-  const result: Record<string, string> = {}
-  for (const [key, value] of Object.entries(env)) {
-    if (value === undefined) continue
-    if (SENSITIVE_ENV_PATTERNS.some((pattern) => pattern.test(key))) continue
-    result[key] = value
-  }
-  return result
-}
 
 let mainWindow: BrowserWindow | null = null
 let appConfig: Config = loadConfig()
@@ -85,7 +69,7 @@ function createPty(options: {
       cols,
       rows,
       cwd,
-      env: sanitizeEnv(process.env)
+      env: buildPtyEnv(process.env)
     })
   } catch (err: any) {
     const errorMsg = `启动 Shell 失败: ${err.message || '未知错误'}`

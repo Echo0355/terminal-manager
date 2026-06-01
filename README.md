@@ -20,7 +20,7 @@ English | **[中文](./README_CN.md)**
 - **Split Layout**: Support horizontal/vertical split with resizable panes
 - **Project Management**: Add frequently used project directories and open terminals with one click
 - **Layout Restoration**: Automatically restore tabs, splits, and working directories after restart
-- **Cross-platform**: Support Windows and macOS
+- **Cross-platform**: Supports Windows and macOS
 
 ## System Requirements
 
@@ -33,7 +33,8 @@ English | **[中文](./README_CN.md)**
 
 Download the installer for your platform from the [Releases](https://github.com/Echo0355/terminal-manager/releases) page:
 
-- Windows: `Terminal Manager-1.1.2-Setup.exe`
+- Windows: `Terminal Manager-1.2.0-x64-Setup.exe`
+- macOS: `Terminal Manager-1.2.0-arm64.dmg` or `Terminal Manager-1.2.0-x64.dmg`
 
 ### Build from Source
 
@@ -48,10 +49,17 @@ npm install
 # Run in development mode
 npm run dev
 
-# Build and package
+# Build a package for the current system
 npm run build
 npm run package
+
+# Build for a specific target platform
+npm run package:win
+npm run package:mac
 ```
+
+`node-pty` is a native module. For release builds, use the included GitHub Actions
+workflow so each package is built on its matching Windows or macOS host.
 
 ## Quick Start
 

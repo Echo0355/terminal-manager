@@ -14,21 +14,30 @@ files:
   - '!{package-lock.json,yarn.lock,pnpm-lock.yaml}'
 extraResources:
   - from: build/icon.ico
-    to: favicon.ico
+    to: icon.ico
+  - from: build/icon.png
+    to: icon.png
 asarUnpack:
   - '**/*.node'
   - 'node_modules/node-pty/**/*'
 win:
+  icon: build/icon.ico
   target:
     - target: nsis
       arch:
         - x64
+  artifactName: ${productName}-${version}-${arch}-Setup.${ext}
 nsis:
-  artifactName: ${productName}-${version}-Setup.${ext}
   shortcutName: Terminal Manager
   uninstallDisplayName: Terminal Manager
   createDesktopShortcut: always
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.developer-tools
+  artifactName: ${productName}-${version}-${arch}.${ext}
 npmRebuild: false

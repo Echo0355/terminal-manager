@@ -90,7 +90,8 @@ function getConfigPath(): string {
 
 export function getDefaultShell(): string {
   if (process.platform === 'win32') return 'powershell.exe'
-  return process.env.SHELL || '/bin/zsh'
+  if (process.env.SHELL) return process.env.SHELL
+  return process.platform === 'darwin' ? '/bin/zsh' : '/bin/sh'
 }
 
 export function getDefaultCwd(): string {
@@ -116,7 +117,9 @@ export function loadConfig(): Config {
   const g = (data as any).general
   return {
     general: {
-      defaultShell: typeof g?.defaultShell === 'string' ? g.defaultShell : defaults.general.defaultShell,
+      defaultShell: typeof g?.defaultShell === 'string' && g.defaultShell.length > 0 && g.defaultShell.length <= 500
+        ? g.defaultShell
+        : defaults.general.defaultShell,
       defaultCwd: typeof g?.defaultCwd === 'string' ? g.defaultCwd : defaults.general.defaultCwd,
       fontSize: typeof g?.fontSize === 'number' ? clamp(g.fontSize, 8, 32) : defaults.general.fontSize,
       theme: g?.theme === 'light' ? 'light' : 'dark',
@@ -135,7 +138,9 @@ export function validateConfig(config: any): Config {
   const g = config.general
   return {
     general: {
-      defaultShell: typeof g?.defaultShell === 'string' ? g.defaultShell : defaults.general.defaultShell,
+      defaultShell: typeof g?.defaultShell === 'string' && g.defaultShell.length > 0 && g.defaultShell.length <= 500
+        ? g.defaultShell
+        : defaults.general.defaultShell,
       defaultCwd: typeof g?.defaultCwd === 'string' ? g.defaultCwd : defaults.general.defaultCwd,
       fontSize: typeof g?.fontSize === 'number' ? clamp(g.fontSize, 8, 32) : defaults.general.fontSize,
       theme: g?.theme === 'light' ? 'light' : 'dark',

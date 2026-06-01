@@ -15,7 +15,7 @@ export let projects: Project[] = []
 // 注：无法使用 shared/config.ts 的 getDefaultConfig()，因其依赖 process.platform（渲染进程不可用）
 export let appConfig: Config = {
   general: {
-    defaultShell: 'powershell.exe',
+    defaultShell: '',
     defaultCwd: '',
     fontSize: 14,
     theme: 'dark',
