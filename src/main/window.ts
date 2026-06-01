@@ -38,10 +38,14 @@ export function createWindow(): BrowserWindow {
     : join(process.resourcesPath, iconFilename)
   const icon = nativeImage.createFromPath(iconPath)
 
-  // macOS 开发模式下手动设置 Dock 图标
+  // macOS 开发模式下手动设置应用名称和 Dock 图标
   // macOS 上 BrowserWindow 的 icon 选项会被忽略，Dock 图标需要通过 app.dock.setIcon() 设置
-  if (process.platform === 'darwin' && is.dev && app.dock) {
-    app.dock.setIcon(iconPath)
+  // 开发模式下没有 .app bundle，应用名称会显示为 "Electron"，需要手动设置
+  if (process.platform === 'darwin' && is.dev) {
+    app.setName('Terminal Manager')
+    if (app.dock) {
+      app.dock.setIcon(iconPath)
+    }
   }
 
   // sandbox: false — node-pty 原生模块需要在渲染进程预加载脚本中运行，
