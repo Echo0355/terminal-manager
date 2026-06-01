@@ -38,6 +38,12 @@ export function createWindow(): BrowserWindow {
     : join(process.resourcesPath, iconFilename)
   const icon = nativeImage.createFromPath(iconPath)
 
+  // macOS 开发模式下手动设置 Dock 图标
+  // macOS 上 BrowserWindow 的 icon 选项会被忽略，Dock 图标需要通过 app.dock.setIcon() 设置
+  if (process.platform === 'darwin' && is.dev && app.dock) {
+    app.dock.setIcon(iconPath)
+  }
+
   // sandbox: false — node-pty 原生模块需要在渲染进程预加载脚本中运行，
   // 启用沙箱会导致原生模块加载失败。contextIsolation + nodeIntegration:false 已提供安全保障。
   const mainWindow = new BrowserWindow({
