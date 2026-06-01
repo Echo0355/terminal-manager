@@ -270,13 +270,6 @@ function bindTerminalClipboard(terminal: Terminal, element: HTMLElement): void {
           shortcut: 'Ctrl+V',
           enabled: Boolean(window.terminalAPI.readClipboardText()),
           onSelect: () => pasteClipboardToTerminal(terminal)
-        },
-        {
-          id: 'cut',
-          label: '剪切',
-          shortcut: 'Ctrl+X',
-          enabled: false,
-          title: '终端输出不可编辑，无法剪切'
         }
       ]
     })

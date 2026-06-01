@@ -15,14 +15,13 @@ describe('showTerminalContextMenu', () => {
     document.body.replaceChildren()
   })
 
-  it('渲染复制、粘贴和剪切操作', () => {
+  it('渲染复制和粘贴操作', () => {
     showTerminalContextMenu({
       x: 24,
       y: 32,
       items: [
         { id: 'copy', label: '复制', shortcut: 'Ctrl+C' },
-        { id: 'paste', label: '粘贴', shortcut: 'Ctrl+V' },
-        { id: 'cut', label: '剪切', enabled: false }
+        { id: 'paste', label: '粘贴', shortcut: 'Ctrl+V' }
       ]
     })
 
@@ -30,11 +29,9 @@ describe('showTerminalContextMenu', () => {
     const buttons = menu.querySelectorAll('button')
     expect(menu.style.left).toBe('24px')
     expect(menu.style.top).toBe('32px')
-    expect(buttons).toHaveLength(3)
+    expect(buttons).toHaveLength(2)
     expect(buttons[0].textContent).toBe('复制Ctrl+C')
     expect(buttons[1].textContent).toBe('粘贴Ctrl+V')
-    expect(buttons[2].textContent).toBe('剪切')
-    expect(buttons[2].disabled).toBe(true)
   })
 
   it('点击可用菜单项后执行操作并关闭菜单', () => {
