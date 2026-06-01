@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { buildPtyEnv, sanitizeEnv } from './pty-env'
+import { buildPtyEnv, sanitizeEnv } from './pty-env.service'
 
 describe('sanitizeEnv', () => {
   it('过滤敏感环境变量并保留普通变量', () => {

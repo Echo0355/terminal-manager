@@ -1,4 +1,4 @@
-import type { Pane, Tab } from './types'
+import type { Pane, Tab } from '../types/renderer.types'
 
 /** Claude SVG 图标（内联 data URI，避免外部文件依赖） */
 const CLAUDE_ICON_DATA_URI =

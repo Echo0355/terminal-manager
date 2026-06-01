@@ -5,7 +5,7 @@
  * 此模块直接修改布局树节点，用于渲染进程的实时操作。
  */
 
-import type { LayoutNode, ContainerNode, LeafNode, Tab } from './types'
+import type { LayoutNode, ContainerNode, LeafNode, Tab } from '../types/renderer.types'
 export type { LayoutNode, ContainerNode, LeafNode }
 
 export function makeLeaf(paneId: string): LeafNode {

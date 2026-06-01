@@ -2,10 +2,20 @@
  * 设置管理
  */
 
-import type { Config } from './types'
-import { THEMES } from './types'
-import { tabs, appConfig, setAppConfig, settingsOverlay, settingShell, settingCwd, settingFontSize, settingScrollback, statusThemeToggle } from './state'
-import { showNotification } from './ui-utils'
+import type { Config } from '../types/renderer.types'
+import { THEMES } from '../types/renderer.types'
+import {
+  tabs,
+  appConfig,
+  setAppConfig,
+  settingsOverlay,
+  settingShell,
+  settingCwd,
+  settingFontSize,
+  settingScrollback,
+  statusThemeToggle
+} from '../store/state'
+import { showNotification } from '../utils/ui-utils'
 
 /**
  * 加载配置

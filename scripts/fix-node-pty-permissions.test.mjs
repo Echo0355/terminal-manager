@@ -33,7 +33,9 @@ describe('fixNodePtyPermissions', () => {
     const { rootDir, helperPath } = createHelper()
 
     expect(fixNodePtyPermissions(rootDir, 'darwin')).toEqual([helperPath])
-    expect(statSync(helperPath).mode & 0o111).toBe(0o111)
+    if (process.platform !== 'win32') {
+      expect(statSync(helperPath).mode & 0o111).toBe(0o111)
+    }
   })
 
   it('非 macOS 不修改文件权限', () => {

@@ -2,8 +2,8 @@
  * 项目管理
  */
 
-import { projects, setProjects, projectList } from './state'
-import { showNotification, showConfirm, escapeHtml } from './ui-utils'
+import { projects, setProjects, projectList } from '../store/state'
+import { showNotification, showConfirm, escapeHtml } from '../utils/ui-utils'
 import { addTab } from './tab-pane-manager'
 
 export async function loadProjects(): Promise<void> {

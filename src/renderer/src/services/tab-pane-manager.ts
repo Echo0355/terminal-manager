@@ -21,7 +21,7 @@ import {
   simplifyLayout
 } from './layout-ops'
 import { attachTabDrag } from './drag-drop'
-import { fitAllPanes, registerClaudeRunCallback, registerClosePaneCallback, registerFocusPaneCallback, renderLayout } from './layout-render'
+import { fitAllPanes, registerClaudeRunCallback, registerClosePaneCallback, registerFocusPaneCallback, renderLayout } from '../components/layout-render'
 import {
   activeTab,
   appConfig,
@@ -38,11 +38,19 @@ import {
   tabBar,
   tabs,
   terminalContainer
-} from './state'
-import { THEMES, type LayoutNode, type LayoutStateNode, type Pane, type Tab, type TabState } from './types'
-import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from './tab-chrome'
-import { showConfirm, showNotification } from './ui-utils'
-import { showTerminalContextMenu } from './terminal-context-menu'
+} from '../store/state'
+import {
+  THEMES,
+  type LayoutNode,
+  type LayoutStateNode,
+  type Pane,
+  type Tab,
+  type TabState
+} from '../types/renderer.types'
+import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from '../components/tab-chrome'
+import { showConfirm, showNotification } from '../utils/ui-utils'
+import { showTerminalContextMenu } from '../components/terminal-context-menu'
+import { shouldConfirmCloseTab } from './tab-close-policy'
 
 registerClosePaneCallback((tab, paneId) => {
   void closePane(tab, paneId)
@@ -713,7 +721,7 @@ export async function closeTab(tab: Tab): Promise<void> {
   const index = tabs.indexOf(tab)
   if (index === -1) return
 
-  if (tabs.length > 1 || tab.panes.size > 1) {
+  if (shouldConfirmCloseTab(tab)) {
     const message = tab.panes.size > 1
       ? `确定要关闭标签”${tab.title}”吗？该标签包含 ${tab.panes.size} 个分屏面板，关闭后将全部销毁。`
       : `确定要关闭标签”${tab.title}”吗？`

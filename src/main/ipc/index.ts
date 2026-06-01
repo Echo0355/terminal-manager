@@ -7,14 +7,14 @@ import { existsSync, statSync } from 'fs'
 import { basename } from 'path'
 import * as pty from 'node-pty'
 
-import { createShellValidator, type ShellInfo } from './shell-detector'
+import { createShellValidator, type ShellInfo } from '../services/shell-detector.service'
 import {
   getDefaultCwd, loadConfig, saveConfig, validateConfig,
   loadProjects, saveProjects, loadLayoutState, saveLayoutState, generateProjectId,
   type Config, type Project
-} from './data-store'
-import { isValidString, isValidNumber, validateCwd } from './validation'
-import { buildPtyEnv } from './pty-env'
+} from '../services/data-store.service'
+import { buildPtyEnv } from '../services/pty-env.service'
+import { isValidString, isValidNumber, validateCwd } from '../utils/validation'
 
 // ── PTY 会话 ──
 

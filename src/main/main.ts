@@ -5,11 +5,11 @@
  */
 
 import { app, BrowserWindow } from 'electron'
-import { detectShells } from './shell-detector'
-import { init as initPtyIpc, killAllSessions } from './pty-ipc'
-import { createMenu } from './menu'
-import { createWindow, isAppQuitting } from './window'
-import { clearLayoutState } from './data-store'
+import { init as initPtyIpc, killAllSessions } from './ipc'
+import { clearLayoutState } from './services/data-store.service'
+import { detectShells } from './services/shell-detector.service'
+import { createMenu } from './windows/menu'
+import { createWindow, isAppQuitting } from './windows/main.window'
 
 let mainWindow: BrowserWindow | null = null
 

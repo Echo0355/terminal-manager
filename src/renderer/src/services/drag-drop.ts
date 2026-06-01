@@ -1,5 +1,5 @@
-import type { Tab } from './types'
-import { tabBar, tabs, terminalContainer } from './state'
+import type { Tab } from '../types/renderer.types'
+import { tabBar, tabs, terminalContainer } from '../store/state'
 import { movePaneToTab, movePaneToNewTab } from './tab-pane-manager'
 
 type DropZone = 'top' | 'bottom' | 'left' | 'right' | 'center'

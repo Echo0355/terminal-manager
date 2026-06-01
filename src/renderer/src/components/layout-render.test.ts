@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { normalizeSizes } from './layout-utils'
-import type { ContainerNode } from './types'
+import { normalizeSizes } from '../utils/layout-utils'
+import type { ContainerNode } from '../types/renderer.types'
 
 /** 创建测试用的容器节点 */
 function makeContainer(sizes: number[]): ContainerNode {

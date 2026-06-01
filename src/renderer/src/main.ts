@@ -10,16 +10,16 @@ import {
   settingsOverlay, settingsClose, settingsCancel, settingsSave, confirmOverlay,
   btnAddProject, statusThemeToggle,
   btnToggleSidebar, btnOpenSettings
-} from './state'
-import { handleConfirmCancel, showConfirm } from './ui-utils'
+} from './store/state'
+import { handleConfirmCancel, showConfirm } from './utils/ui-utils'
 import {
   addTab, closeTab, switchTab, switchToNextTab, switchToPrevTab,
   closeCurrentPane, focusDirection, updatePaneCount, splitHorizontal, splitVertical
-} from './tab-pane-manager'
-import { fitAllPanes, initWindowResizeHandler, initIMEHandling } from './layout-render'
-import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './settings'
-import { loadProjects, addProject } from './project-manager'
-import { initDragDrop } from './drag-drop'
+} from './services/tab-pane-manager'
+import { fitAllPanes, initWindowResizeHandler, initIMEHandling } from './components/layout-render'
+import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './services/settings'
+import { loadProjects, addProject } from './services/project-manager'
+import { initDragDrop } from './services/drag-drop'
 
 // ── 侧边栏宽度拖拽 ──
 
@@ -27,6 +27,27 @@ import { initDragDrop } from './drag-drop'
 const SIDEBAR_MIN_WIDTH = 150
 /** 侧边栏最大宽度（像素） */
 const SIDEBAR_MAX_WIDTH = 400
+/** 拖拽低于该宽度时直接折叠侧边栏（像素） */
+const SIDEBAR_COLLAPSE_THRESHOLD = 120
+
+function clampSidebarWidth(width: number): number {
+  if (!Number.isFinite(width)) return SIDEBAR_MIN_WIDTH
+  return Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, Math.round(width)))
+}
+
+function collapseSidebar(): void {
+  sidebar.classList.add('collapsed')
+  sidebar.style.width = ''
+  btnToggleSidebar.classList.remove('active')
+}
+
+function expandSidebar(width = sidebarWidth): void {
+  const nextWidth = clampSidebarWidth(width)
+  setSidebarWidth(nextWidth)
+  sidebar.classList.remove('collapsed')
+  sidebar.style.width = `${nextWidth}px`
+  btnToggleSidebar.classList.add('active')
+}
 
 function initSidebarResize(): void {
   let isResizing = false
@@ -47,9 +68,17 @@ function initSidebarResize(): void {
   document.addEventListener('mousemove', (e) => {
     if (!isResizing) return
     const delta = e.clientX - startX
-    const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, startWidth + delta))
+    const rawWidth = startWidth + delta
+    if (rawWidth < SIDEBAR_COLLAPSE_THRESHOLD) {
+      collapseSidebar()
+      return
+    }
+
+    const newWidth = clampSidebarWidth(rawWidth)
+    sidebar.classList.remove('collapsed')
     sidebar.style.width = `${newWidth}px`
     setSidebarWidth(newWidth)
+    btnToggleSidebar.classList.add('active')
   })
 
   document.addEventListener('mouseup', () => {
@@ -70,35 +99,22 @@ settingsOverlay.addEventListener('click', (e) => {
   if (e.target === settingsOverlay) closeSettings()
 })
 
-// 活动栏按钮 — 显示/隐藏侧边栏
-let pendingSidebarResize: (() => void) | null = null
-
 btnToggleSidebar.addEventListener('click', () => {
   const isCollapsed = sidebar.classList.contains('collapsed')
 
-  // 清理上一次未完成的 transitionend 监听器
-  if (pendingSidebarResize) {
-    sidebar.removeEventListener('transitionend', pendingSidebarResize)
-    pendingSidebarResize = null
-  }
-
   if (isCollapsed) {
-    sidebar.classList.remove('collapsed')
-    sidebar.style.width = `${sidebarWidth}px`
-    btnToggleSidebar.classList.add('active')
+    expandSidebar()
   } else {
-    setSidebarWidth(sidebar.offsetWidth)
-    sidebar.classList.add('collapsed')
-    sidebar.style.width = ''
-    btnToggleSidebar.classList.remove('active')
+    if (sidebar.offsetWidth >= SIDEBAR_COLLAPSE_THRESHOLD) {
+      setSidebarWidth(clampSidebarWidth(sidebar.offsetWidth))
+    }
+    collapseSidebar()
   }
 
-  // transition 结束后调整终端尺寸
-  pendingSidebarResize = (): void => {
-    pendingSidebarResize = null
+  // 侧边栏瞬时切换后，在下一帧按新布局调整终端尺寸。
+  requestAnimationFrame(() => {
     if (activeTab) fitAllPanes(activeTab)
-  }
-  sidebar.addEventListener('transitionend', pendingSidebarResize, { once: true })
+  })
 })
 
 btnOpenSettings.addEventListener('click', () => openSettings())

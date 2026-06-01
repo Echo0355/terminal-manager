@@ -360,7 +360,6 @@
         flex-shrink: 0;
         overflow: hidden;
         position: relative;
-        transition: width 0.2s ease;
       }
 
       #sidebar.collapsed {
@@ -392,11 +391,24 @@
         letter-spacing: 0.5px;
         color: var(--text-secondary);
         flex-shrink: 0;
+        min-width: 0;
+      }
+
+      #sidebar-header > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       #sidebar-header .sidebar-actions {
         display: flex;
         gap: 2px;
+        flex-shrink: 0;
+      }
+
+      #sidebar.collapsed #sidebar-header > span {
+        display: none;
       }
 
       #sidebar-header button {

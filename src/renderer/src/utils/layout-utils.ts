@@ -4,7 +4,7 @@
  * 从 layout-render.ts 提取的纯函数，不依赖 DOM 环境，便于独立测试。
  */
 
-import type { ContainerNode } from './types'
+import type { ContainerNode } from '../types/renderer.types'
 
 /**
  * 规范化容器 sizes 为精确百分比（总和 = 100）

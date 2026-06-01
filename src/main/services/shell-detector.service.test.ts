@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { createShellValidator, type ShellInfo } from './shell-detector'
+import { createShellValidator, type ShellInfo } from './shell-detector.service'
 
 // mock fs 模块
 vi.mock('fs', () => ({
@@ -106,7 +106,7 @@ describe('detectShells', () => {
     vi.stubGlobal('process', { ...process, platform: 'win32' })
     vi.mocked(existsSync).mockReturnValue(false)
 
-    const { detectShells } = await import('./shell-detector')
+    const { detectShells } = await import('./shell-detector.service')
     const shells = detectShells()
 
     expect(shells.some(s => s.name === 'PowerShell')).toBe(true)
@@ -119,7 +119,7 @@ describe('detectShells', () => {
       return p === 'C:\\Program Files\\Git\\bin\\bash.exe'
     })
 
-    const { detectShells } = await import('./shell-detector')
+    const { detectShells } = await import('./shell-detector.service')
     const shells = detectShells()
 
     const gitBash = shells.find(s => s.name === 'Git Bash')
@@ -133,7 +133,7 @@ describe('detectShells', () => {
       return p === 'C:\\Windows\\System32\\wsl.exe'
     })
 
-    const { detectShells } = await import('./shell-detector')
+    const { detectShells } = await import('./shell-detector.service')
     const shells = detectShells()
 
     expect(shells.some(s => s.name === 'WSL')).toBe(true)
@@ -146,7 +146,7 @@ describe('detectShells', () => {
     vi.mocked(existsSync).mockReturnValue(false)
 
     try {
-      const { detectShells } = await import('./shell-detector')
+      const { detectShells } = await import('./shell-detector.service')
       const shells = detectShells()
 
       const cmd = shells.find(s => s.name === 'CMD')
@@ -162,7 +162,7 @@ describe('detectShells', () => {
       return p === '/bin/bash' || p === '/bin/sh'
     })
 
-    const { detectShells } = await import('./shell-detector')
+    const { detectShells } = await import('./shell-detector.service')
     const shells = detectShells()
 
     expect(shells.some(s => s.name === 'bash')).toBe(true)
@@ -174,7 +174,7 @@ describe('detectShells', () => {
     vi.stubGlobal('process', { ...process, platform: 'linux' })
     vi.mocked(existsSync).mockReturnValue(false)
 
-    const { detectShells } = await import('./shell-detector')
+    const { detectShells } = await import('./shell-detector.service')
     const shells = detectShells()
 
     expect(shells).toEqual([])

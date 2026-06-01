@@ -1,9 +1,9 @@
-import type { ContainerNode, LayoutNode, Pane, Tab } from './types'
-import { isLeaf } from './layout-ops'
-import { activeTab, requestSaveLayout, tabs, terminalContainer } from './state'
+import type { ContainerNode, LayoutNode, Pane, Tab } from '../types/renderer.types'
+import { isLeaf } from '../services/layout-ops'
+import { activeTab, requestSaveLayout, tabs, terminalContainer } from '../store/state'
 import { createClaudeButton, createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
-import { normalizeSizes } from './layout-utils'
-import { pinIMECompositionAnchor, releaseIMECompositionAnchor } from './ime-handling'
+import { normalizeSizes } from '../utils/layout-utils'
+import { pinIMECompositionAnchor, releaseIMECompositionAnchor } from '../utils/ime-handling'
 
 type ClosePaneCallback = (tab: Tab, paneId: string) => void
 type FocusPaneCallback = (tab: Tab, paneId: string) => void

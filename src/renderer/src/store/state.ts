@@ -2,7 +2,7 @@
  * 渲染进程全局状态
  */
 
-import type { Tab, Project, Config } from './types'
+import type { Tab, Project, Config } from '../types/renderer.types'
 
 // ── 全局状态 ──
 

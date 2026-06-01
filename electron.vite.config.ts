@@ -6,7 +6,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     build: {
       rollupOptions: {
-        input: resolve('src/main/index.ts'),
+        input: resolve('src/main/main.ts'),
         external: ['node-pty']
       }
     }
@@ -15,7 +15,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     build: {
       rollupOptions: {
-        input: resolve('src/preload/index.ts')
+        input: resolve('src/preload/preload.ts')
       }
     }
   },

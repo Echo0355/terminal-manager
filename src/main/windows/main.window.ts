@@ -58,7 +58,7 @@ export function createWindow(): BrowserWindow {
     show: false,
     icon,
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/preload.js'),
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false
