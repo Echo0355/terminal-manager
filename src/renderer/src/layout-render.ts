@@ -14,7 +14,7 @@ let closeListenersBound = false
 let focusListenersBound = false
 
 /**
- * IME 组合期间的滚动锁定
+ * IME 组合期间的定位隔离
  *
  * xterm.js 的 CompositionHelper.updateCompositionElements() 在每次 render 时
  * 将 textarea 和预编辑文字移到当前终端光标位置。Claude Code 持续输出时
@@ -22,146 +22,57 @@ let focusListenersBound = false
  *
  * 处理方案：
  * 1. compositionstart 时固定 textarea 和预编辑文字的坐标，compositionend 时释放。
- * 2. 锁定分屏布局祖先容器，阻止浏览器为显示 textarea 自动滚动。
- * 3. 不锁定 .xterm-viewport，允许终端输出期间正常滚动。
- * 4. 组合输入期间跳过 fit，结束后再补一次尺寸同步。
- *
- * 滚动锁使用 requestAnimationFrame 在浏览器自动滚动后立即恢复原位。
+ * 2. textarea 使用 viewport 固定定位，脱离分屏滚动层级，避免浏览器自动滚动祖先容器。
+ * 3. 组合输入期间跳过 fit，结束后再补一次尺寸同步。
+ * 4. 对缺失 compositionend 的输入法，在普通按键或失焦时兜底释放状态。
  */
-interface ScrollPosition {
-  left: number
-  top: number
-}
-
 let isIMEComposing = false
-let imeScrollHandler: (() => void) | null = null
-/** compositionstart 时捕获的需要锁定的元素引用 */
-let imeLockedElements: HTMLElement[] | null = null
-let imeSavedPositions: Map<HTMLElement, ScrollPosition> | null = null
-let imeRestoreFrame: number | null = null
 let imePinnedTerminal: HTMLElement | null = null
 let imeNeedsFit = false
 
-function addIMEElement(targets: Set<HTMLElement>, element: Element | null | undefined): void {
-  if (element instanceof HTMLElement) {
-    targets.add(element)
+function finishIMEComposition(): void {
+  if (!isIMEComposing) return
+
+  isIMEComposing = false
+  releaseIMECompositionAnchor(imePinnedTerminal)
+  imePinnedTerminal = null
+
+  // composition 期间窗口可能发生 resize，结束后补一次尺寸同步。
+  const shouldFit = imeNeedsFit
+  imeNeedsFit = false
+  if (shouldFit && activeTab) {
+    fitAllPanes(activeTab)
   }
-}
-
-function collectIMELockElements(target: EventTarget | null): HTMLElement[] {
-  const targets = new Set<HTMLElement>()
-
-  addIMEElement(targets, document.documentElement)
-  addIMEElement(targets, document.body)
-  addIMEElement(targets, terminalContainer)
-
-  if (!activeTab) return Array.from(targets)
-
-  addIMEElement(targets, activeTab.containerEl)
-
-  const activeElement = target instanceof HTMLElement
-    ? target
-    : document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null
-  let ancestor: HTMLElement | null = activeElement?.parentElement ?? null
-  while (ancestor) {
-    targets.add(ancestor)
-    if (ancestor === terminalContainer) break
-    ancestor = ancestor.parentElement
-  }
-
-  return Array.from(targets)
-}
-
-function restoreIMEScrollPositions(): void {
-  if (!imeSavedPositions) return
-
-  imeSavedPositions.forEach((saved, el) => {
-    if (!el.isConnected) return
-    if (el.scrollLeft !== saved.left) {
-      el.scrollLeft = saved.left
-    }
-    if (el.scrollTop !== saved.top) {
-      el.scrollTop = saved.top
-    }
-  })
-}
-
-function scheduleIMEScrollRestore(): void {
-  if (!isIMEComposing || imeRestoreFrame !== null) return
-
-  imeRestoreFrame = requestAnimationFrame(() => {
-    imeRestoreFrame = null
-    if (isIMEComposing) {
-      restoreIMEScrollPositions()
-    }
-  })
 }
 
 /**
- * 初始化 IME 滚动锁定
+ * 初始化 IME 定位隔离
  */
 export function initIMEHandling(): void {
   document.addEventListener('compositionstart', (event) => {
     isIMEComposing = true
     imePinnedTerminal = pinIMECompositionAnchor(event.target)
-
-    if (!activeTab) return
-
-    const lockedElements = collectIMELockElements(event.target)
-
-    // 记录当前 scrollLeft/scrollTop
-    const savedPositions = new Map<HTMLElement, ScrollPosition>()
-    lockedElements.forEach((el) => {
-      savedPositions.set(el, { left: el.scrollLeft, top: el.scrollTop })
-    })
-
-    imeLockedElements = lockedElements
-    imeSavedPositions = savedPositions
-
-    // scroll 监听器：浏览器自动滚动后立即恢复
-    imeScrollHandler = () => {
-      scheduleIMEScrollRestore()
-    }
-
-    lockedElements.forEach((el) => {
-      el.addEventListener('scroll', imeScrollHandler!, { capture: true })
-    })
   })
 
   document.addEventListener('compositionupdate', (event) => {
     if (!imePinnedTerminal) {
       imePinnedTerminal = pinIMECompositionAnchor(event.target)
     }
-    scheduleIMEScrollRestore()
   })
 
   document.addEventListener('compositionend', () => {
-    restoreIMEScrollPositions()
-    isIMEComposing = false
-    releaseIMECompositionAnchor(imePinnedTerminal)
-    imePinnedTerminal = null
+    finishIMEComposition()
+  })
 
-    // 移除 scroll 监听器
-    if (imeScrollHandler && imeLockedElements) {
-      imeLockedElements.forEach((el) => {
-        el.removeEventListener('scroll', imeScrollHandler!, { capture: true })
-      })
-      imeScrollHandler = null
-      imeLockedElements = null
-    }
-    imeSavedPositions = null
-    if (imeRestoreFrame !== null) {
-      cancelAnimationFrame(imeRestoreFrame)
-      imeRestoreFrame = null
-    }
+  // 部分 Windows 输入法可能不派发 compositionend，行为与 xterm 内部兜底保持一致。
+  document.addEventListener('keydown', (event) => {
+    if (!imePinnedTerminal || event.keyCode === 229 || [16, 17, 18].includes(event.keyCode)) return
+    finishIMEComposition()
+  })
 
-    // composition 期间窗口可能发生 resize，结束后补一次尺寸同步。
-    const shouldFit = imeNeedsFit
-    imeNeedsFit = false
-    if (shouldFit && activeTab) {
-      fitAllPanes(activeTab)
+  document.addEventListener('focusout', (event) => {
+    if (imePinnedTerminal?.contains(event.target as Node)) {
+      finishIMEComposition()
     }
   })
 }

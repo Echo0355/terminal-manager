@@ -23,15 +23,16 @@ function findIMETextarea(target: EventTarget | null): HTMLTextAreaElement | null
 }
 
 function readIMEAnchor(textarea: HTMLTextAreaElement): IMEAnchor | null {
-  const left = Number.parseFloat(textarea.style.left)
-  const top = Number.parseFloat(textarea.style.top)
+  const bounds = textarea.getBoundingClientRect()
+  const left = bounds.left
+  const top = bounds.top
   if (!Number.isFinite(left) || !Number.isFinite(top) || left < 0 || top < 0) {
     return null
   }
 
   return {
-    left: textarea.style.left,
-    top: textarea.style.top
+    left: `${left}px`,
+    top: `${top}px`
   }
 }
 

@@ -584,6 +584,7 @@
          组合输入期间固定初始坐标，避免 Claude Code 输出导致候选框闪烁和错位。 */
       .pane .xterm.ime-composing .xterm-helper-textarea,
       .pane .xterm.ime-composing .composition-view {
+        position: fixed !important;
         left: var(--ime-anchor-left) !important;
         top: var(--ime-anchor-top) !important;
       }
