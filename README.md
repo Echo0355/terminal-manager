@@ -111,13 +111,13 @@ The application will automatically open a terminal window on startup.
 
 Press `Ctrl+,` to open the settings dialog. You can configure:
 
-- Default Shell (e.g., `powershell.exe`, `cmd.exe`, `bash`)
+- Default Shell (choose an auto-detected Shell or enter a custom path)
 - Default working directory
 - Font size (8-32)
 - Scrollback lines
 - Theme (dark/light)
 
-Settings require an application restart to take effect.
+Theme changes apply immediately. Other terminal settings are used by newly created terminals; existing terminals remain unchanged.
 
 ## Layout Restoration
 
@@ -154,7 +154,7 @@ A: Please check:
 
 **Q: How to change the default Shell?**
 
-A: Press `Ctrl+,` to open settings, enter the Shell path in "Default Shell", save and restart the application.
+A: Press `Ctrl+,` to open settings, choose an auto-detected Shell or enter a custom path, then save. You can also right-click a project in the Explorer to create a tab with a specific Shell and that project as the working directory.
 
 **Q: Layout not restored?**
 

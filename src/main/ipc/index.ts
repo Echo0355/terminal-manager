@@ -56,7 +56,8 @@ function createPty(options: {
   cols?: number
   rows?: number
 }): { id: string; shell: string; cwd: string } {
-  const shellPath = shellValidator.resolve(options.shell, appConfig.general.defaultShell)
+  const shell = shellValidator.resolveInfo(options.shell, appConfig.general.defaultShell)
+  const shellPath = shell.path
   const cwd = validateCwd(options.cwd, getEffectiveCwd)
   const cols = isValidNumber(options.cols, 1, 1000) ? options.cols : 80
   const rows = isValidNumber(options.rows, 1, 500) ? options.rows : 24
@@ -64,7 +65,7 @@ function createPty(options: {
 
   let ptyProcess: pty.IPty
   try {
-    ptyProcess = pty.spawn(shellPath, [], {
+    ptyProcess = pty.spawn(shellPath, shell.args || [], {
       name: 'xterm-256color',
       cols,
       rows,

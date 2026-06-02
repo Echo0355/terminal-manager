@@ -89,6 +89,27 @@ describe('createShellValidator', () => {
       expect(validator.resolve('/usr/bin/evil')).toBe('')
     })
   })
+
+  describe('resolveInfo', () => {
+    it('返回检测到的 Git Bash 启动参数', () => {
+      const validator = createShellValidator(detectedShells, getDefaultShell)
+
+      expect(validator.resolveInfo('C:\\Program Files\\Git\\bin\\bash.exe')).toEqual({
+        name: 'Git Bash',
+        path: 'C:\\Program Files\\Git\\bin\\bash.exe',
+        args: ['--login', '-i']
+      })
+    })
+
+    it('自定义默认 shell 使用空启动参数', () => {
+      const validator = createShellValidator([], () => 'C:\\Tools\\custom.exe')
+
+      expect(validator.resolveInfo()).toEqual({
+        name: 'C:\\Tools\\custom.exe',
+        path: 'C:\\Tools\\custom.exe'
+      })
+    })
+  })
 })
 
 // ── detectShells ──

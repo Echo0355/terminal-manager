@@ -677,9 +677,9 @@ async function restoreTab(tabState: TabState, isActive: boolean): Promise<void> 
   }
 }
 
-export async function addTab(cwd?: string): Promise<void> {
+export async function addTab(cwd?: string, shell?: string): Promise<void> {
   const title = nextTerminalTitle(cwd)
-  const pane = await createTerminalPane(cwd ? { cwd, title } : { title })
+  const pane = await createTerminalPane({ cwd, shell, title })
 
   const tab = createTabRecord({
     id: `tab_${Date.now()}`,

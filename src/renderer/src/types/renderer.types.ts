@@ -67,6 +67,14 @@ export interface Config {
   }
 }
 
+// ── Shell 类型 ──
+
+export interface ShellInfo {
+  name: string
+  path: string
+  args?: string[]
+}
+
 // ── Pane 类型 ──
 
 export interface Pane {

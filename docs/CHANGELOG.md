@@ -2,6 +2,17 @@
 
 本文件记录 Terminal Manager 的版本更新历史。格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [1.2.2] - 2026-06-02
+
+### 新增
+
+- **Shell 快速选择**：资源管理器项目支持右键选择自动检测到的 Shell，并以项目目录新建标签
+- **默认 Shell 候选项**：设置页默认 Shell 输入框提供自动检测候选项，同时保留自定义路径输入
+
+### 修复
+
+- **Git Bash 启动参数**：启动检测到的 Git Bash 时正确传入 `--login -i`
+
 ## [1.2.1] - 2026-06-01
 
 ### 新增

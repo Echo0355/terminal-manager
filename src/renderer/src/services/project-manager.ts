@@ -2,8 +2,10 @@
  * 项目管理
  */
 
-import { projects, setProjects, projectList } from '../store/state'
+import { detectedShells, projects, setProjects, projectList } from '../store/state'
 import { showNotification, showConfirm, escapeHtml } from '../utils/ui-utils'
+import { createShellMenuItems } from '../components/shell-options'
+import { showTerminalContextMenu } from '../components/terminal-context-menu'
 import { addTab } from './tab-pane-manager'
 
 export async function loadProjects(): Promise<void> {
@@ -37,6 +39,17 @@ export function renderProjectList(): void {
 
     item.querySelector('.project-name')!.addEventListener('dblclick', () => {
       addTab(project.path)
+    })
+
+    item.addEventListener('contextmenu', (event) => {
+      event.preventDefault()
+      showTerminalContextMenu({
+        x: event.clientX,
+        y: event.clientY,
+        items: createShellMenuItems(detectedShells, (shell) => {
+          void addTab(project.path, shell.path)
+        })
+      })
     })
 
     item.querySelectorAll('.project-action-btn').forEach((btn) => {

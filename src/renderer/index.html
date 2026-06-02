@@ -273,7 +273,6 @@
         opacity: 0.6;
       }
 
-
       /* ── 主内容区 ── */
       #main {
         display: flex;
@@ -1182,6 +1181,10 @@
       .terminal-context-menu-shortcut {
         color: var(--text-muted);
         font-size: 11px;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .terminal-context-menu-item:hover:not(:disabled) .terminal-context-menu-shortcut {
@@ -1308,6 +1311,21 @@
       select.settings-input {
         cursor: pointer;
         height: 26px;
+      }
+
+      .settings-shell-fields {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+      }
+
+      .settings-shell-custom {
+        display: none;
+        margin-top: 6px;
+      }
+
+      .settings-shell-custom.visible {
+        display: block;
       }
 
       #settings-footer {
@@ -1442,8 +1460,7 @@
     </div>
 
     <div id="app">
-      <div id="tab-bar">
-      </div>
+      <div id="tab-bar"></div>
 
       <div id="main">
         <!-- 活动栏 -->
@@ -1543,7 +1560,10 @@
             <div class="settings-group-title">终端</div>
             <div class="settings-row">
               <span class="settings-label">默认 Shell</span>
-              <input type="text" id="setting-shell" class="settings-input" placeholder="例如：powershell.exe 或 /bin/zsh">
+              <div class="settings-shell-fields">
+                <select id="setting-shell-select" class="settings-input"></select>
+                <input type="text" id="setting-shell" class="settings-input settings-shell-custom" placeholder="输入自定义 Shell 路径">
+              </div>
             </div>
             <div class="settings-row">
               <span class="settings-label">默认目录</span>

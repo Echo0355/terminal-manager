@@ -17,7 +17,7 @@ import {
   closeCurrentPane, focusDirection, updatePaneCount, splitHorizontal, splitVertical
 } from './services/tab-pane-manager'
 import { fitAllPanes, initWindowResizeHandler, initIMEHandling } from './components/layout-render'
-import { loadConfig, openSettings, closeSettings, saveSettings, applyTheme } from './services/settings'
+import { loadConfig, loadShells, openSettings, closeSettings, saveSettings, applyTheme } from './services/settings'
 import { loadProjects, addProject } from './services/project-manager'
 import { initDragDrop } from './services/drag-drop'
 
@@ -206,6 +206,7 @@ document.addEventListener('keydown', (e) => {
 async function main(): Promise<void> {
   try {
     await loadConfig()
+    await loadShells()
     applyTheme(appConfig.general.theme)
     await loadProjects()
     initSidebarResize()

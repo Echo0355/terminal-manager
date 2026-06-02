@@ -53,6 +53,17 @@ export function createShellValidator(detectedShells: ShellInfo[], getDefaultShel
       const shell = requestedShell || configShell || getDefaultShell()
       if (this.isAllowed(shell)) return shell
       return getDefaultShell()
+    },
+    resolveInfo(requestedShell?: string, configShell?: string): ShellInfo {
+      const shellPath = this.resolve(requestedShell, configShell)
+      const detectedShell = detectedShells.find((shell) => shell.path === shellPath)
+      if (detectedShell) {
+        return {
+          ...detectedShell,
+          args: detectedShell.args ? [...detectedShell.args] : undefined
+        }
+      }
+      return { name: basename(shellPath) || shellPath, path: shellPath }
     }
   }
 }

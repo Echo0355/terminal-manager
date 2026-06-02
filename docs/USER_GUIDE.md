@@ -51,8 +51,9 @@ English | **[中文](./USER_GUIDE_CN.md)**
 
 ### Open New Terminal
 
-- Click the **＋** button in the tab bar
 - Press `Ctrl+T`
+- Double-click a project name in the Explorer
+- Right-click a project in the Explorer to choose a Shell and create a tab with that project as the working directory
 - From menu "Terminal → New Terminal"
 
 ### Enter Commands
@@ -81,7 +82,9 @@ URLs in terminal output are automatically recognized as clickable links.
 
 ### New Tab
 
-Click the **＋** button in the tab bar or press `Ctrl+T`.
+Press `Ctrl+T` to create a tab with the default Shell.
+
+Right-click a project in the Explorer to choose one of the auto-detected Shells and create a tab using that project as the working directory.
 
 ### Switch Tabs
 
@@ -211,12 +214,12 @@ Press `Ctrl+,` to open the settings dialog, or click the gear icon at the bottom
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| Default Shell | Shell path used by terminal | `powershell.exe` (Windows) / `/bin/zsh` (macOS) |
+| Default Shell | Choose an auto-detected Shell or enter a custom path | `powershell.exe` (Windows) / `/bin/zsh` (macOS) |
 | Default Directory | Default working directory for new terminals | User home directory |
 | Font Size | Terminal font size (8-32) | 14 |
 | Scrollback | Terminal history lines (100-100000) | 10000 |
 
-> **Note**: Terminal settings (Shell, directory, font size, scrollback) require application restart to take effect. Theme settings take effect immediately.
+> **Note**: Theme changes apply to existing terminals immediately. Shell, directory, font size, and scrollback changes are used immediately by newly created terminals; existing terminals remain unchanged.
 
 ### Save Settings
 

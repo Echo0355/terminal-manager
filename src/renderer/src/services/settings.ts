@@ -8,13 +8,17 @@ import {
   tabs,
   appConfig,
   setAppConfig,
+  setDetectedShells,
+  detectedShells,
   settingsOverlay,
+  settingShellSelect,
   settingShell,
   settingCwd,
   settingFontSize,
   settingScrollback,
   statusThemeToggle
 } from '../store/state'
+import { CUSTOM_SHELL_VALUE, renderShellOptions } from '../components/shell-options'
 import { showNotification } from '../utils/ui-utils'
 
 /**
@@ -22,6 +26,21 @@ import { showNotification } from '../utils/ui-utils'
  */
 export async function loadConfig(): Promise<void> {
   setAppConfig(await window.terminalAPI.loadConfig())
+}
+
+/**
+ * 加载自动检测到的 Shell，并更新设置页候选项。
+ */
+export async function loadShells(): Promise<void> {
+  const shells = await window.terminalAPI.listShells()
+  setDetectedShells(shells)
+  renderShellOptions(settingShellSelect, shells, appConfig.general.defaultShell)
+}
+
+function updateCustomShellVisibility(): void {
+  const isCustom = settingShellSelect.value === CUSTOM_SHELL_VALUE
+  settingShell.classList.toggle('visible', isCustom)
+  settingShell.disabled = !isCustom
 }
 
 /**
@@ -56,6 +75,8 @@ export function applyTheme(themeName: 'dark' | 'light'): void {
  */
 export function openSettings(): void {
   settingShell.value = appConfig.general.defaultShell
+  renderShellOptions(settingShellSelect, detectedShells, appConfig.general.defaultShell)
+  updateCustomShellVisibility()
   settingCwd.value = appConfig.general.defaultCwd
   settingFontSize.value = String(appConfig.general.fontSize)
   settingScrollback.value = String(appConfig.general.scrollback)
@@ -81,9 +102,12 @@ export function closeSettings(): void {
  */
 export async function saveSettings(): Promise<void> {
   const activeThemeBtn = settingsOverlay.querySelector('.theme-option.active') as HTMLElement
+  const selectedShell = settingShellSelect.value === CUSTOM_SHELL_VALUE
+    ? settingShell.value.trim()
+    : settingShellSelect.value
   const newConfig: Config = {
     general: {
-      defaultShell: settingShell.value.trim() || appConfig.general.defaultShell,
+      defaultShell: selectedShell || appConfig.general.defaultShell,
       defaultCwd: settingCwd.value.trim(),
       fontSize: Math.max(8, Math.min(32, parseInt(settingFontSize.value) || 14)),
       theme: activeThemeBtn?.dataset.theme === 'light' ? 'light' : 'dark',
@@ -93,7 +117,7 @@ export async function saveSettings(): Promise<void> {
 
   const result = await window.terminalAPI.saveConfig(newConfig)
   if (result.success) {
-    // 主题即时生效，其他设置需重启
+    // 主题即时应用到现有终端，其他设置用于后续新建终端
     const changedNonTheme =
       newConfig.general.defaultShell !== appConfig.general.defaultShell ||
       newConfig.general.defaultCwd !== appConfig.general.defaultCwd ||
@@ -103,7 +127,7 @@ export async function saveSettings(): Promise<void> {
     applyTheme(newConfig.general.theme)
     closeSettings()
     showNotification(
-      changedNonTheme ? '设置已保存，部分设置需重启后生效' : '设置已保存',
+      changedNonTheme ? '设置已保存，新建终端将使用新设置' : '设置已保存',
       'success'
     )
   }
@@ -117,3 +141,5 @@ themeButtons.forEach((btn) => {
     ;(btn as HTMLElement).classList.add('active')
   })
 })
+
+settingShellSelect.addEventListener('change', updateCustomShellVisibility)
