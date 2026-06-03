@@ -38,9 +38,37 @@ describe('buildPtyEnv', () => {
     expect(env.PATH?.split(':').filter((entry) => entry === '/opt/homebrew/bin')).toHaveLength(1)
   })
 
+  it('macOS 缺失 locale 时补充 UTF-8 设置', () => {
+    const env = buildPtyEnv({ PATH: '/usr/bin:/bin' }, 'darwin')
+
+    expect(env.LANG).toBe('en_US.UTF-8')
+    expect(env.LC_CTYPE).toBe('UTF-8')
+  })
+
+  it('macOS 保留已有的 UTF-8 locale', () => {
+    const env = buildPtyEnv({
+      PATH: '/usr/bin:/bin',
+      LANG: 'zh_CN.UTF-8',
+      LC_CTYPE: 'zh_CN.UTF-8'
+    }, 'darwin')
+
+    expect(env.LANG).toBe('zh_CN.UTF-8')
+    expect(env.LC_CTYPE).toBe('zh_CN.UTF-8')
+  })
+
+  it('macOS 将非 UTF-8 的 LC_ALL 修正为 UTF-8', () => {
+    const env = buildPtyEnv({
+      PATH: '/usr/bin:/bin',
+      LC_ALL: 'C'
+    }, 'darwin')
+
+    expect(env.LC_ALL).toBe('en_US.UTF-8')
+  })
+
   it('Windows 保持原 PATH', () => {
     const env = buildPtyEnv({ PATH: 'C:\\Windows\\System32' }, 'win32')
 
     expect(env.PATH).toBe('C:\\Windows\\System32')
+    expect(env.LANG).toBeUndefined()
   })
 })
