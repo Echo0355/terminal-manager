@@ -2,6 +2,22 @@
 
 本文件记录 Terminal Manager 的版本更新历史。格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [1.2.3] - 2026-06-04
+
+### 新增
+
+- **外部 IDE 打开目录**：面板标签栏和单面板浮动操作栏新增 IDE 按钮，支持在 VS Code、IntelliJ IDEA、PyCharm 中打开当前终端工作目录
+- **终端上下文菜单图标支持**：菜单项新增可选图标属性，外部 IDE 菜单项显示对应编辑器图标
+- **面板图标资源**：新增 Claude、VS Code、IntelliJ IDEA、PyCharm 的 SVG 图标文件
+
+### 改进
+
+- **面板工具按钮重构**：Claude 按钮与 IDE 按钮统一为浮动操作栏，分屏模式下同行显示在标签栏中
+
+### 修复
+
+- **macOS PTY 中文乱码**：PTY 环境补充 `UTF-8` locale 环境变量，避免 macOS 下中文输出乱码
+
 ## [1.2.2] - 2026-06-02
 
 ### 新增

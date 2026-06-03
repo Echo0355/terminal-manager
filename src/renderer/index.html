@@ -826,7 +826,23 @@
       .pane-actions {
         display: flex;
         align-items: center;
+        gap: 4px;
         margin-left: auto;
+      }
+
+      .pane-floating-actions {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px;
+        border-radius: 5px;
+        background: rgba(30, 30, 30, 0.72);
+        opacity: 0;
+        transition: opacity 0.15s ease, background 0.15s ease;
       }
 
       /* ── 面板关闭按钮 ── */
@@ -855,21 +871,18 @@
         color: var(--text-primary);
       }
 
-      /* ── Claude 运行按钮 ── */
-      .claude-run-btn {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        z-index: 10;
+      /* ── 面板工具按钮 ── */
+      .pane-tool-btn {
         width: 26px;
         height: 26px;
         padding: 2px;
         border: none;
         border-radius: 4px;
         background: transparent;
+        color: var(--text-muted);
         cursor: pointer;
-        opacity: 0;
-        transition: opacity 0.15s ease, background 0.15s ease;
+        opacity: 0.72;
+        transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -881,24 +894,31 @@
         pointer-events: none;
       }
 
-      .pane-frame:hover .claude-run-btn,
-      .claude-run-btn:focus-visible {
-        opacity: 0.6;
+      .editor-open-menu-btn {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0;
+        line-height: 1;
+        margin-left: 10px;
       }
 
-      .claude-run-btn:hover {
+      .pane-frame:hover .pane-floating-actions,
+      .pane-floating-actions:focus-within {
+        opacity: 1;
+      }
+
+      .pane-tool-btn:hover {
         opacity: 1 !important;
         background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
       }
 
-      /* 分屏标签栏内的 Claude 按钮 — 与关闭按钮同行，静态定位 */
-      .pane-tab-strip .claude-run-btn {
-        position: static;
+      .pane-tab-strip .pane-tool-btn {
         width: 22px;
         height: 22px;
         padding: 1px;
         opacity: 0.65;
-        margin: 4px;
+        margin: 4px 0;
       }
 
       .pane-tab-strip .claude-run-btn img {
@@ -906,8 +926,9 @@
         height: 16px;
       }
 
-      .pane-tab-strip .claude-run-btn:hover {
-        opacity: 1 !important;
+      .pane-tab-strip .editor-open-menu-btn {
+        font-size: 8px;
+        margin-left: 10px;
       }
 
       /* ── 标签栏拖拽放置高亮 ── */
@@ -1176,6 +1197,20 @@
         color: var(--text-disabled);
         cursor: default;
         opacity: 0.65;
+      }
+
+      .terminal-context-menu-label {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        gap: 8px;
+      }
+
+      .terminal-context-menu-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        object-fit: contain;
       }
 
       .terminal-context-menu-shortcut {

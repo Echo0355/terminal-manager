@@ -34,6 +34,27 @@ describe('showTerminalContextMenu', () => {
     expect(buttons[1].textContent).toBe('粘贴Ctrl+V')
   })
 
+  it('渲染带图标的菜单项', () => {
+    showTerminalContextMenu({
+      x: 24,
+      y: 32,
+      items: [
+        {
+          id: 'open-editor',
+          label: '在 VS Code 中打开',
+          iconSrc: '/vscode.svg',
+          iconAlt: 'VS Code'
+        }
+      ]
+    })
+
+    const icon = document.querySelector('.terminal-context-menu-icon') as HTMLImageElement
+    expect(icon).not.toBeNull()
+    expect(icon.getAttribute('src')).toBe('/vscode.svg')
+    expect(icon.alt).toBe('VS Code')
+    expect(icon.draggable).toBe(false)
+  })
+
   it('点击可用菜单项后执行操作并关闭菜单', () => {
     const onSelect = vi.fn()
     showTerminalContextMenu({

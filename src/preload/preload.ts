@@ -271,6 +271,27 @@ contextBridge.exposeInMainWorld('terminalAPI', {
   },
 
   /**
+   * 使用外部 IDE 打开目录
+   *
+   * @param editor - 编辑器类型
+   * @param folderPath - 要打开的目录路径
+   * @returns Promise 包含操作结果
+   */
+  openFolderInEditor: (
+    editor: 'vscode' | 'idea' | 'pycharm',
+    folderPath: string
+  ): Promise<{ success: boolean; message?: string; error?: string }> => {
+    const validEditors = ['vscode', 'idea', 'pycharm']
+    if (!validEditors.includes(editor)) {
+      return Promise.resolve({ success: false, error: '无效的编辑器类型' })
+    }
+    if (typeof folderPath !== 'string' || folderPath.length === 0 || folderPath.length > 2000) {
+      return Promise.resolve({ success: false, error: '无效的路径' })
+    }
+    return ipcRenderer.invoke('editor:open-folder', editor, folderPath)
+  },
+
+  /**
    * 打开目录选择对话框
    *
    * @returns Promise 包含选择的目录路径，取消时返回 null

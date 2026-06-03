@@ -1,9 +1,15 @@
 import type { ContainerNode, LayoutNode, Pane, Tab } from '../types/renderer.types'
 import { isLeaf } from '../services/layout-ops'
 import { activeTab, requestSaveLayout, tabs, terminalContainer } from '../store/state'
-import { createClaudeButton, createPaneTabStrip, getPaneDisplayTitle } from './tab-chrome'
+import { createFloatingPaneActions, createPaneTabStrip, getPaneDisplayTitle, type ExternalEditor } from './tab-chrome'
 import { normalizeSizes } from '../utils/layout-utils'
 import { pinIMECompositionAnchor, releaseIMECompositionAnchor } from '../utils/ime-handling'
+import { showNotification } from '../utils/ui-utils'
+import { showTerminalContextMenu } from './terminal-context-menu'
+
+const VSCODE_ICON_URL = new URL('../assets/vscode.svg', import.meta.url).href
+const IDEA_ICON_URL = new URL('../assets/idea.svg', import.meta.url).href
+const PYCHARM_ICON_URL = new URL('../assets/pycharm.svg', import.meta.url).href
 
 type ClosePaneCallback = (tab: Tab, paneId: string) => void
 type FocusPaneCallback = (tab: Tab, paneId: string) => void
@@ -12,6 +18,17 @@ let closePaneCallback: ClosePaneCallback | null = null
 let focusPaneCallback: FocusPaneCallback | null = null
 let closeListenersBound = false
 let focusListenersBound = false
+
+const EXTERNAL_EDITOR_ITEMS: Array<{
+  editor: ExternalEditor
+  label: string
+  iconSrc: string
+  iconAlt: string
+}> = [
+  { editor: 'vscode', label: '在 VS Code 中打开', iconSrc: VSCODE_ICON_URL, iconAlt: 'VS Code' },
+  { editor: 'idea', label: '在 IntelliJ IDEA 中打开', iconSrc: IDEA_ICON_URL, iconAlt: 'IntelliJ IDEA' },
+  { editor: 'pycharm', label: '在 PyCharm 中打开', iconSrc: PYCHARM_ICON_URL, iconAlt: 'PyCharm' }
+]
 
 /**
  * IME 组合期间的定位隔离
@@ -152,6 +169,54 @@ export function registerClaudeRunCallback(): void {
   terminalContainer.addEventListener('click', handleClick)
 }
 
+/**
+ * 注册外部 IDE 菜单按钮点击回调
+ *
+ * 使用事件委托，在 terminalContainer 上监听所有 .editor-open-menu-btn 的点击事件，
+ * 找到对应 pane 后显示外部 IDE 打开菜单。
+ */
+export function registerEditorOpenCallback(): void {
+  const handleClick = (event: Event): void => {
+    const button = (event.target as HTMLElement).closest('.editor-open-menu-btn') as HTMLElement | null
+    if (!button) return
+
+    event.stopPropagation()
+
+    const paneId = button.getAttribute('data-pane-id')
+    if (!paneId) return
+
+    const tab = tabs.find((item) => item.panes.has(paneId))
+    const pane = tab?.panes.get(paneId)
+    if (!pane?.cwd) return
+
+    const rect = button.getBoundingClientRect()
+    showTerminalContextMenu({
+      x: rect.left,
+      y: rect.bottom + 4,
+      items: EXTERNAL_EDITOR_ITEMS.map((item) => ({
+        id: `open-editor-${item.editor}`,
+        label: item.label,
+        iconSrc: item.iconSrc,
+        iconAlt: item.iconAlt,
+        onSelect: () => {
+          void openPaneFolderInEditor(item.editor, pane.cwd)
+        }
+      }))
+    })
+  }
+
+  terminalContainer.addEventListener('click', handleClick)
+}
+
+async function openPaneFolderInEditor(editor: ExternalEditor, cwd: string): Promise<void> {
+  const result = await window.terminalAPI.openFolderInEditor(editor, cwd)
+  if (result.success) {
+    showNotification(result.message || '已打开编辑器', 'success')
+  } else {
+    showNotification('打开编辑器失败：' + (result.error || '未知错误'), 'error')
+  }
+}
+
 export function renderLayout(tab: Tab): void {
   for (const pane of tab.panes.values()) {
     pane.element.remove()
@@ -239,7 +304,7 @@ function createPaneFrame(pane: Pane, tab: Tab, paneId: string, _showHeader: bool
     )
   } else {
     // 单面板时显示浮动的 Claude 运行按钮（分屏时按钮已在标签栏中）
-    frame.appendChild(createClaudeButton(paneId))
+    frame.appendChild(createFloatingPaneActions(paneId))
   }
 
   const body = document.createElement('div')

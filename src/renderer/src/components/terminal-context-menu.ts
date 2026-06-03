@@ -9,6 +9,8 @@ const MENU_MARGIN = 4
 export interface TerminalContextMenuItem {
   id: string
   label: string
+  iconSrc?: string
+  iconAlt?: string
   shortcut?: string
   enabled?: boolean
   title?: string
@@ -93,7 +95,20 @@ export function showTerminalContextMenu(options: TerminalContextMenuOptions): vo
     button.setAttribute('role', 'menuitem')
 
     const label = document.createElement('span')
-    label.textContent = item.label
+    label.className = 'terminal-context-menu-label'
+
+    if (item.iconSrc) {
+      const icon = document.createElement('img')
+      icon.className = 'terminal-context-menu-icon'
+      icon.src = item.iconSrc
+      icon.alt = item.iconAlt || ''
+      icon.draggable = false
+      label.appendChild(icon)
+    }
+
+    const labelText = document.createElement('span')
+    labelText.textContent = item.label
+    label.appendChild(labelText)
     button.appendChild(label)
 
     if (item.shortcut) {

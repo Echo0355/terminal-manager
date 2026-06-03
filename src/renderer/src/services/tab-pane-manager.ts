@@ -21,7 +21,7 @@ import {
   simplifyLayout
 } from './layout-ops'
 import { attachTabDrag } from './drag-drop'
-import { fitAllPanes, registerClaudeRunCallback, registerClosePaneCallback, registerFocusPaneCallback, renderLayout } from '../components/layout-render'
+import { fitAllPanes, registerClaudeRunCallback, registerClosePaneCallback, registerEditorOpenCallback, registerFocusPaneCallback, renderLayout } from '../components/layout-render'
 import {
   activeTab,
   appConfig,
@@ -61,6 +61,7 @@ registerFocusPaneCallback((tab, paneId) => {
 })
 
 registerClaudeRunCallback()
+registerEditorOpenCallback()
 
 /**
  * 布局保存已禁用 — 每次启动为空白状态，退出时清空布局文件。

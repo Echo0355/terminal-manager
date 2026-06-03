@@ -14,6 +14,7 @@ import {
   type Config, type Project
 } from '../services/data-store.service'
 import { buildPtyEnv } from '../services/pty-env.service'
+import { getEditorLabel, isExternalEditor, openFolderInEditor } from '../services/editor-launcher.service'
 import { isValidString, isValidNumber, validateCwd } from '../utils/validation'
 
 // ── PTY 会话 ──
@@ -202,6 +203,21 @@ function setupIpcHandlers(): void {
       return { success: true }
     } catch (err: any) {
       return { success: false, error: err.message || '删除项目失败' }
+    }
+  })
+
+  ipcMain.handle('editor:open-folder', async (_event, editor: unknown, folderPath: unknown) => {
+    try {
+      if (!isExternalEditor(editor)) return { success: false, error: '无效的编辑器类型' }
+      if (!isValidString(folderPath, 2000)) return { success: false, error: '无效的路径' }
+      if (!existsSync(folderPath)) return { success: false, error: '目录不存在' }
+      if (!statSync(folderPath).isDirectory()) return { success: false, error: '路径不是目录' }
+
+      const result = await openFolderInEditor(editor, folderPath)
+      if (!result.success) return result
+      return { success: true, message: `已在 ${getEditorLabel(editor)} 中打开` }
+    } catch (err: any) {
+      return { success: false, error: err.message || '打开编辑器失败' }
     }
   })
 

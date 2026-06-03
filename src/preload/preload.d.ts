@@ -283,6 +283,18 @@ export interface TerminalAPI {
   removeProject: (projectId: string) => Promise<{ success: boolean; error?: string }>
 
   /**
+   * 使用外部 IDE 打开目录
+   *
+   * @param editor - 编辑器类型
+   * @param folderPath - 要打开的目录路径
+   * @returns Promise 包含操作结果
+   */
+  openFolderInEditor: (
+    editor: 'vscode' | 'idea' | 'pycharm',
+    folderPath: string
+  ) => Promise<{ success: boolean; message?: string; error?: string }>
+
+  /**
    * 打开目录选择对话框
    *
    * @returns Promise 包含选择的目录路径
