@@ -89,7 +89,7 @@ describe('createPaneTabStrip', () => {
     expect(strip.getAttribute('data-pane-id')).toBe('pane-1')
     expect(strip.getAttribute('data-tab-id')).toBe('tab-1')
 
-    // 子元素：pane-tab 和 pane-actions（包含 claude + IDE 菜单 + close）
+    // 子元素：pane-tab 和 pane-actions（包含 Claude + Codex + IDE 菜单 + close）
     expect(strip.children).toHaveLength(2)
 
     const paneTab = strip.children[0] as HTMLElement
@@ -104,19 +104,24 @@ describe('createPaneTabStrip', () => {
 
     const actions = strip.children[1] as HTMLElement
     expect(actions.className).toBe('pane-actions')
-    expect(actions.children).toHaveLength(3)
+    expect(actions.children).toHaveLength(4)
 
     const claudeBtn = actions.children[0] as HTMLElement
     expect(claudeBtn.className).toBe('pane-tool-btn claude-run-btn')
     expect(claudeBtn.getAttribute('data-pane-id')).toBe('pane-1')
 
-    const editorMenuBtn = actions.children[1] as HTMLElement
+    const codexBtn = actions.children[1] as HTMLElement
+    expect(codexBtn.className).toBe('pane-tool-btn codex-run-btn')
+    expect(codexBtn.getAttribute('data-pane-id')).toBe('pane-1')
+    expect(codexBtn.getAttribute('draggable')).toBe('false')
+
+    const editorMenuBtn = actions.children[2] as HTMLElement
     expect(editorMenuBtn.className).toBe('pane-tool-btn editor-open-menu-btn')
     expect(editorMenuBtn.textContent).toBe('IDE')
     expect(editorMenuBtn.getAttribute('data-pane-id')).toBe('pane-1')
     expect(editorMenuBtn.getAttribute('draggable')).toBe('false')
 
-    const closeBtn = actions.children[2] as HTMLElement
+    const closeBtn = actions.children[3] as HTMLElement
     expect(closeBtn.className).toBe('pane-close-btn')
     expect(closeBtn.textContent).toBe('×')
     expect(closeBtn.getAttribute('draggable')).toBe('false')

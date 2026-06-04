@@ -5,7 +5,11 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { shouldConfirmCloseTab } from './tab-close-policy'
+import {
+  createCloseOtherTabsConfirmMessage,
+  shouldConfirmCloseOtherTabs,
+  shouldConfirmCloseTab
+} from './tab-close-policy'
 
 /** 创建仅包含 panes 的标签测试替身 */
 function makeTabWithPaneCount(count: number): Parameters<typeof shouldConfirmCloseTab>[0] {
@@ -25,5 +29,30 @@ describe('shouldConfirmCloseTab', () => {
 
   it('没有终端面板时不需要确认', () => {
     expect(shouldConfirmCloseTab(makeTabWithPaneCount(0))).toBe(false)
+  })
+})
+
+describe('shouldConfirmCloseOtherTabs', () => {
+  it('任一待关闭标签包含终端面板时需要确认', () => {
+    expect(shouldConfirmCloseOtherTabs([
+      makeTabWithPaneCount(0),
+      makeTabWithPaneCount(1)
+    ])).toBe(true)
+  })
+
+  it('所有待关闭标签都没有终端面板时不需要确认', () => {
+    expect(shouldConfirmCloseOtherTabs([
+      makeTabWithPaneCount(0),
+      makeTabWithPaneCount(0)
+    ])).toBe(false)
+  })
+})
+
+describe('createCloseOtherTabsConfirmMessage', () => {
+  it('生成包含标签数和面板数的确认文案', () => {
+    expect(createCloseOtherTabsConfirmMessage([
+      makeTabWithPaneCount(1),
+      makeTabWithPaneCount(2)
+    ])).toBe('确定要关闭其他 2 个标签吗？其中包含 3 个终端面板，关闭后将全部销毁。')
   })
 })

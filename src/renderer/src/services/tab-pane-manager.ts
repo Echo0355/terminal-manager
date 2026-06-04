@@ -21,7 +21,15 @@ import {
   simplifyLayout
 } from './layout-ops'
 import { attachTabDrag } from './drag-drop'
-import { fitAllPanes, registerClaudeRunCallback, registerClosePaneCallback, registerEditorOpenCallback, registerFocusPaneCallback, renderLayout } from '../components/layout-render'
+import {
+  fitAllPanes,
+  registerClaudeRunCallback,
+  registerClosePaneCallback,
+  registerCodexRunCallback,
+  registerEditorOpenCallback,
+  registerFocusPaneCallback,
+  renderLayout
+} from '../components/layout-render'
 import {
   activeTab,
   appConfig,
@@ -50,7 +58,11 @@ import {
 import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from '../components/tab-chrome'
 import { showConfirm, showNotification } from '../utils/ui-utils'
 import { showTerminalContextMenu } from '../components/terminal-context-menu'
-import { shouldConfirmCloseTab } from './tab-close-policy'
+import {
+  createCloseOtherTabsConfirmMessage,
+  shouldConfirmCloseOtherTabs,
+  shouldConfirmCloseTab
+} from './tab-close-policy'
 
 registerClosePaneCallback((tab, paneId) => {
   void closePane(tab, paneId)
@@ -61,6 +73,7 @@ registerFocusPaneCallback((tab, paneId) => {
 })
 
 registerClaudeRunCallback()
+registerCodexRunCallback()
 registerEditorOpenCallback()
 
 /**
@@ -98,6 +111,44 @@ tabBar.addEventListener('click', (event) => {
   if (tab) {
     switchTab(tab)
   }
+})
+
+tabBar.addEventListener('contextmenu', (event) => {
+  const target = event.target as HTMLElement
+
+  if (target.closest('.pane-tab') || target.closest('.pane-close-btn')) {
+    return
+  }
+
+  const tabEl = target.closest('.tab') as HTMLElement | null
+  const tabId = tabEl?.getAttribute('data-tab-id')
+  const tab = tabs.find((item) => item.id === tabId)
+  if (!tab) return
+
+  event.preventDefault()
+  event.stopPropagation()
+
+  showTerminalContextMenu({
+    x: event.clientX,
+    y: event.clientY,
+    items: [
+      {
+        id: 'close-tab',
+        label: '关闭',
+        onSelect: () => {
+          void closeTab(tab)
+        }
+      },
+      {
+        id: 'close-other-tabs',
+        label: '关闭其他标签',
+        enabled: tabs.length > 1,
+        onSelect: () => {
+          void closeOtherTabs(tab)
+        }
+      }
+    ]
+  })
 })
 
 function updateStatusForPane(pane: Pane | undefined): void {
@@ -736,6 +787,29 @@ export async function closeTab(tab: Tab): Promise<void> {
 
   removeTab(tab)
   scheduleSaveLayout()
+}
+
+/**
+ * 关闭目标标签之外的所有标签。
+ *
+ * @param tab - 需要保留的标签页。
+ */
+export async function closeOtherTabs(tab: Tab): Promise<void> {
+  if (!tabs.includes(tab) || tabs.length <= 1) return
+
+  const otherTabs = tabs.filter((item) => item.id !== tab.id)
+  if (shouldConfirmCloseOtherTabs(otherTabs)) {
+    const confirmed = await showConfirm('关闭其他标签', createCloseOtherTabsConfirmMessage(otherTabs))
+    if (!confirmed) return
+  }
+
+  for (const otherTab of [...otherTabs]) {
+    await closeTabSilent(otherTab)
+  }
+
+  if (tabs.includes(tab)) {
+    switchTab(tab)
+  }
 }
 
 export function switchToNextTab(): void {

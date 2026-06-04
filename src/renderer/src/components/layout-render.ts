@@ -170,6 +170,34 @@ export function registerClaudeRunCallback(): void {
 }
 
 /**
+ * 注册 Codex 按钮点击回调
+ *
+ * 使用事件委托，在 terminalContainer 上监听所有 .codex-run-btn 的点击事件，
+ * 找到对应 pane 后向其终端发送 "codex\r" 命令。
+ */
+export function registerCodexRunCallback(): void {
+  const handleClick = (event: Event): void => {
+    const button = (event.target as HTMLElement).closest('.codex-run-btn')
+    if (!button) return
+
+    event.stopPropagation()
+
+    const paneId = button.getAttribute('data-pane-id')
+    if (!paneId) return
+
+    const tab = tabs.find((item) => item.panes.has(paneId))
+    if (!tab) return
+
+    const pane = tab.panes.get(paneId)
+    if (pane?.sessionId) {
+      window.terminalAPI.writeToTerminal(pane.sessionId, 'codex\r')
+    }
+  }
+
+  terminalContainer.addEventListener('click', handleClick)
+}
+
+/**
  * 注册外部 IDE 菜单按钮点击回调
  *
  * 使用事件委托，在 terminalContainer 上监听所有 .editor-open-menu-btn 的点击事件，
@@ -303,7 +331,7 @@ function createPaneFrame(pane: Pane, tab: Tab, paneId: string, _showHeader: bool
       })
     )
   } else {
-    // 单面板时显示浮动的 Claude 运行按钮（分屏时按钮已在标签栏中）
+    // 单面板时显示浮动的 AI 工具按钮（分屏时按钮已在标签栏中）
     frame.appendChild(createFloatingPaneActions(paneId))
   }
 

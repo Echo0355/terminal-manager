@@ -3,6 +3,7 @@ import type { Pane, Tab } from '../types/renderer.types'
 export type ExternalEditor = 'vscode' | 'idea' | 'pycharm'
 
 const CLAUDE_ICON_URL = new URL('../assets/claude.svg', import.meta.url).href
+const CODEX_ICON_URL = new URL('../assets/codex.svg', import.meta.url).href
 
 /**
  * 创建 Claude 运行按钮
@@ -20,6 +21,31 @@ export function createClaudeButton(paneId: string): HTMLButtonElement {
   const img = document.createElement('img')
   img.src = CLAUDE_ICON_URL
   img.alt = 'Claude'
+  img.draggable = false
+  btn.appendChild(img)
+
+  return btn
+}
+
+/**
+ * 创建 Codex 运行按钮
+ *
+ * 浮动在终端面板右上角，点击后在当前终端执行 `codex` 命令。
+ *
+ * @param paneId - 面板 ID
+ * @returns Codex 运行按钮
+ */
+export function createCodexButton(paneId: string): HTMLButtonElement {
+  const btn = document.createElement('button')
+  btn.className = 'pane-tool-btn codex-run-btn'
+  btn.type = 'button'
+  btn.title = '运行 Codex'
+  btn.setAttribute('data-pane-id', paneId)
+  btn.setAttribute('draggable', 'false')
+
+  const img = document.createElement('img')
+  img.src = CODEX_ICON_URL
+  img.alt = 'Codex'
   img.draggable = false
   btn.appendChild(img)
 
@@ -47,10 +73,10 @@ export function createEditorOpenMenuButton(paneId: string): HTMLButtonElement {
  * 创建面板操作按钮列表
  *
  * @param paneId - 面板 ID
- * @returns Claude 和外部 IDE 操作按钮
+ * @returns Claude、Codex 和外部 IDE 操作按钮
  */
 export function createPaneActionButtons(paneId: string): HTMLButtonElement[] {
-  return [createClaudeButton(paneId), createEditorOpenMenuButton(paneId)]
+  return [createClaudeButton(paneId), createCodexButton(paneId), createEditorOpenMenuButton(paneId)]
 }
 
 /**
