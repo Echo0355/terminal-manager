@@ -4,12 +4,41 @@
  * 覆盖不同平台的命令构造、Windows 常见安装目录探测和编辑器白名单校验。
  */
 
-import { describe, expect, it } from 'vitest'
+import { EventEmitter } from 'events'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const childProcessMocks = vi.hoisted(() => ({
+  execFileSync: vi.fn(),
+  spawn: vi.fn()
+}))
+
+vi.mock('child_process', () => childProcessMocks)
+
 import {
   buildEditorLaunchCommands,
   getEditorLabel,
-  isExternalEditor
+  isExternalEditor,
+  openFolderInEditor
 } from './editor-launcher.service'
+
+function mockSuccessfulLaunch(): void {
+  childProcessMocks.spawn.mockImplementation(() => {
+    const child = new EventEmitter() as EventEmitter & { unref: () => void }
+    child.unref = vi.fn()
+
+    setTimeout(() => {
+      child.emit('spawn')
+      child.emit('exit', 0)
+    }, 0)
+
+    return child
+  })
+}
+
+beforeEach(() => {
+  childProcessMocks.execFileSync.mockReset()
+  childProcessMocks.spawn.mockReset()
+})
 
 describe('isExternalEditor', () => {
   it('允许受支持的编辑器标识', () => {
@@ -206,5 +235,34 @@ describe('buildEditorLaunchCommands', () => {
     })
 
     expect(commands).toEqual([])
+  })
+})
+
+describe('openFolderInEditor', () => {
+  it.each([
+    ['vscode' as const, 'Visual Studio Code'],
+    ['idea' as const, 'IntelliJ IDEA'],
+    ['pycharm' as const, 'PyCharm']
+  ])('macOS 缓存 %s 启动命令时保留应用参数', async (editor, appName) => {
+    const platformSpy = vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin')
+    mockSuccessfulLaunch()
+
+    await expect(openFolderInEditor(editor, '/workspace/first')).resolves.toEqual({ success: true })
+    await expect(openFolderInEditor(editor, '/workspace/second')).resolves.toEqual({ success: true })
+
+    expect(childProcessMocks.spawn).toHaveBeenNthCalledWith(
+      1,
+      'open',
+      ['-a', appName, '/workspace/first'],
+      expect.objectContaining({ detached: true, stdio: 'ignore' })
+    )
+    expect(childProcessMocks.spawn).toHaveBeenNthCalledWith(
+      2,
+      'open',
+      ['-a', appName, '/workspace/second'],
+      expect.objectContaining({ detached: true, stdio: 'ignore' })
+    )
+
+    platformSpy.mockRestore()
   })
 })

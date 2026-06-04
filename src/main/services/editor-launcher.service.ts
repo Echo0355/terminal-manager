@@ -17,7 +17,9 @@ interface LaunchCommand {
   waitForExit?: boolean
 }
 
-type LaunchCommandTemplate = Omit<LaunchCommand, 'args'>
+interface LaunchCommandTemplate extends LaunchCommand {
+  folderArgIndex: number
+}
 
 interface CommandBuildOptions {
   platform?: NodeJS.Platform
@@ -138,7 +140,7 @@ export async function openFolderInEditor(
   for (const command of commands) {
     const launched = await tryLaunch(command)
     if (launched) {
-      launchCommandCache.set(editor, toLaunchCommandTemplate(command))
+      launchCommandCache.set(editor, toLaunchCommandTemplate(command, folderPath))
       return { success: true }
     }
   }
@@ -224,18 +226,27 @@ function firstAvailableCommands(commandBuilders: Array<() => LaunchCommand[]>): 
   return []
 }
 
-function toLaunchCommandTemplate(command: LaunchCommand): LaunchCommandTemplate {
+function toLaunchCommandTemplate(command: LaunchCommand, folderPath: string): LaunchCommandTemplate {
+  const folderArgIndex = command.args.lastIndexOf(folderPath)
+
   return {
     command: command.command,
+    args: [...command.args],
+    folderArgIndex: folderArgIndex >= 0 ? folderArgIndex : command.args.length,
     shell: command.shell,
     waitForExit: command.waitForExit
   }
 }
 
 function applyFolderPath(command: LaunchCommandTemplate, folderPath: string): LaunchCommand {
+  const args = [...command.args]
+  args[command.folderArgIndex] = folderPath
+
   return {
-    ...command,
-    args: [folderPath]
+    command: command.command,
+    args,
+    shell: command.shell,
+    waitForExit: command.waitForExit
   }
 }
 
