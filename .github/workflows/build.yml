@@ -31,7 +31,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run test
-      - run: npm run ${{ matrix.script }}
+      - run: npm run ${{ matrix.script }} -- --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: terminal-manager-${{ matrix.artifact }}

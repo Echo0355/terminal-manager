@@ -33,6 +33,7 @@ describe('fixNodePtyPermissions', () => {
     const { rootDir, helperPath } = createHelper()
 
     expect(fixNodePtyPermissions(rootDir, 'darwin')).toEqual([helperPath])
+    // Windows 的 chmodSync 不支持 Unix 权限位，跳过权限断言
     if (process.platform !== 'win32') {
       expect(statSync(helperPath).mode & 0o111).toBe(0o111)
     }
