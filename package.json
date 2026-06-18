@@ -1,6 +1,6 @@
 {
   "name": "terminal-manager",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "A cross-platform multi-terminal manager built with Electron",
   "author": "Terminal Manager",
   "license": "MIT",

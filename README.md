@@ -33,8 +33,8 @@ English | **[中文](./README_CN.md)**
 
 Download the installer for your platform from the [Releases](https://github.com/Echo0355/terminal-manager/releases) page:
 
-- Windows: `Terminal Manager-1.2.3-x64-Setup.exe`
-- macOS: `Terminal Manager-1.2.3-arm64.dmg` or `Terminal Manager-1.2.3-x64.dmg`
+- Windows: `Terminal Manager-1.2.4-x64-Setup.exe`
+- macOS: `Terminal Manager-1.2.4-arm64.dmg` or `Terminal Manager-1.2.4-x64.dmg`
 
 ### Build from Source
 

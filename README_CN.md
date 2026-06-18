@@ -33,8 +33,8 @@
 
 从 [Releases](https://github.com/Echo0355/terminal-manager/releases) 页面下载对应平台的安装包：
 
-- Windows: `Terminal Manager-1.2.3-x64-Setup.exe`
-- macOS: `Terminal Manager-1.2.3-arm64.dmg` 或 `Terminal Manager-1.2.3-x64.dmg`
+- Windows: `Terminal Manager-1.2.4-x64-Setup.exe`
+- macOS: `Terminal Manager-1.2.4-arm64.dmg` 或 `Terminal Manager-1.2.4-x64.dmg`
 
 ### 从源码构建
 
