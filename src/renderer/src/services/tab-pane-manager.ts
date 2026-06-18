@@ -58,6 +58,7 @@ import {
 import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from '../components/tab-chrome'
 import { showConfirm, showNotification } from '../utils/ui-utils'
 import { showTerminalContextMenu } from '../components/terminal-context-menu'
+import { TERMINAL_FONT_FAMILY } from '../utils/terminal-font'
 import {
   createCloseOtherTabsConfirmMessage,
   shouldConfirmCloseOtherTabs,
@@ -393,7 +394,7 @@ export async function createTerminalPane(options?: { shell?: string; cwd?: strin
 
   const terminal = new Terminal({
     fontSize: appConfig.general.fontSize,
-    fontFamily: "'Cascadia Code', 'Microsoft YaHei', Consolas, monospace",
+    fontFamily: TERMINAL_FONT_FAMILY,
     theme: THEMES[appConfig.general.theme],
     cursorBlink: true,
     cursorStyle: 'block',
