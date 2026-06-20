@@ -248,6 +248,7 @@ async function openPaneFolderInEditor(editor: ExternalEditor, cwd: string): Prom
 export function renderLayout(tab: Tab): void {
   for (const pane of tab.panes.values()) {
     pane.element.remove()
+    pane.commandInputContainerEl?.remove()
   }
 
   tab.containerEl.replaceChildren()
@@ -339,6 +340,9 @@ function createPaneFrame(pane: Pane, tab: Tab, paneId: string, _showHeader: bool
   body.className = 'pane-frame-body'
   body.appendChild(pane.element)
   frame.appendChild(body)
+  if (pane.commandInputContainerEl) {
+    frame.appendChild(pane.commandInputContainerEl)
+  }
 
   return frame
 }

@@ -56,6 +56,7 @@ import {
   type TabState
 } from '../types/renderer.types'
 import { getPaneDisplayTitle, renderWorkspaceTab, titleFromCwd } from '../components/tab-chrome'
+import { createTerminalCommandInput } from '../components/terminal-input'
 import { showConfirm, showNotification } from '../utils/ui-utils'
 import { showTerminalContextMenu } from '../components/terminal-context-menu'
 import { TERMINAL_FONT_FAMILY } from '../utils/terminal-font'
@@ -161,6 +162,15 @@ function updateStatusForPane(pane: Pane | undefined): void {
   cwdText.textContent = pane?.cwd || appConfig.general.defaultCwd || '~'
 }
 
+function focusPaneInput(pane: Pane): void {
+  if (pane.commandInputEl) {
+    pane.commandInputEl.focus()
+    return
+  }
+
+  pane.terminal.focus()
+}
+
 export function updatePaneCount(): void {
   if (!activeTab) {
     statusPanes.textContent = ''
@@ -184,7 +194,7 @@ export function focusPane(tab: Tab, paneId: string): void {
 
   pane.element.classList.add('focused')
   pane.element.closest('.pane-frame')?.classList.add('focused')
-  pane.terminal.focus()
+  focusPaneInput(pane)
   updateStatusForPane(pane)
 
   if (activeTab?.id === tab.id) {
@@ -290,6 +300,10 @@ function bindTerminalClipboard(terminal: Terminal, element: HTMLElement): void {
   })
 
   element.addEventListener('paste', (event) => {
+    if ((event.target as HTMLElement).closest('.terminal-command-input')) {
+      return
+    }
+
     const text = event.clipboardData?.getData('text/plain') || window.terminalAPI.readClipboardText()
     if (!text) return
     event.preventDefault()
@@ -448,6 +462,23 @@ export async function createTerminalPane(options?: { shell?: string; cwd?: strin
   const shell = result.shell || appConfig.general.defaultShell
   const actualCwd = result.cwd || options?.cwd || ''
   const title = options?.title || titleFromCwd(actualCwd) || ''
+  const {
+    container: commandInputContainerEl,
+    textarea: commandInputEl
+  } = createTerminalCommandInput({
+    onFocus: () => {
+      const tab = tabs.find((item) => item.panes.has(id))
+      if (tab && tab.focusedPaneId !== id) {
+        focusPane(tab, id)
+      }
+    },
+    onSubmit: (command) => {
+      void window.terminalAPI.writeToTerminal(sessionId, `${command}\r`)
+    },
+    onResize: () => {
+      fitAddon.fit()
+    }
+  })
 
   terminal.onData((data) => {
     void window.terminalAPI.writeToTerminal(sessionId, data)
@@ -477,9 +508,24 @@ export async function createTerminalPane(options?: { shell?: string; cwd?: strin
     if (tab) {
       focusPane(tab, id)
     }
+    terminal.focus()
   })
 
-  return { id, sessionId, shell, cwd: actualCwd, title, terminal, fitAddon, element, cleanupData, cleanupExit, cleanupError }
+  return {
+    id,
+    sessionId,
+    shell,
+    cwd: actualCwd,
+    title,
+    terminal,
+    fitAddon,
+    element,
+    commandInputContainerEl,
+    commandInputEl,
+    cleanupData,
+    cleanupExit,
+    cleanupError
+  }
 }
 
 export async function destroyPane(pane: Pane): Promise<void> {
@@ -763,7 +809,7 @@ export function switchTab(tab: Tab): void {
   fitAllPanes(tab)
   const focusedPane = tab.panes.get(tab.focusedPaneId)
   if (focusedPane) {
-    focusedPane.terminal.focus()
+    focusPaneInput(focusedPane)
   }
   updateStatusForPane(focusedPane)
   updatePaneCount()

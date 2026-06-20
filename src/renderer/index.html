@@ -591,6 +591,53 @@
         height: 100%;
       }
 
+      .terminal-command-input {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 5px 8px;
+        background: var(--bg-base);
+        border-top: 1px solid var(--border-default);
+      }
+
+      .pane-frame.focused .terminal-command-input {
+        border-top-color: var(--border-subtle);
+      }
+
+      .terminal-command-input-prompt {
+        flex: 0 0 auto;
+        padding-top: 4px;
+        color: var(--accent);
+        font-family: 'Cascadia Code', Consolas, monospace;
+        font-size: 13px;
+        line-height: 18px;
+        user-select: none;
+      }
+
+      .terminal-command-input-box {
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
+        min-height: 24px;
+        max-height: 108px;
+        padding: 3px 0;
+        color: var(--text-primary);
+        background: transparent;
+        border: none;
+        outline: none;
+        resize: none;
+        overflow-y: auto;
+        font-family: 'Cascadia Code', Consolas, monospace;
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      .terminal-command-input-box::placeholder {
+        color: var(--text-muted);
+      }
+
       /* xterm 在每次 render 时会跟随终端光标移动 IME 辅助元素。
          组合输入期间固定初始坐标，避免 Claude Code 输出导致候选框闪烁和错位。 */
       .pane .xterm.ime-composing .xterm-helper-textarea,

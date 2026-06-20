@@ -86,6 +86,8 @@ export interface Pane {
   terminal: Terminal
   fitAddon: FitAddon
   element: HTMLElement
+  commandInputContainerEl?: HTMLElement
+  commandInputEl?: HTMLTextAreaElement
   cleanupData: () => void
   cleanupExit: () => void
   cleanupError: () => void
